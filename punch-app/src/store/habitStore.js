@@ -142,5 +142,33 @@ export const useHabitStore = create((set, get) => ({
   },
 
   // Clear error
-  clearError: () => set({ error: null })
+  clearError: () => set({ error: null }),
+
+  // Check if habit can be punched today (based on time_window)
+  canPunchToday: (habit) => {
+    if (!habit.lastPunchedAt) return true;
+    
+    const lastPunch = new Date(habit.lastPunchedAt);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    lastPunch.setHours(0, 0, 0, 0);
+    
+    const timeWindow = habit.timeWindow || 'daily';
+    
+    if (timeWindow === 'daily') {
+      return lastPunch.getTime() < today.getTime();
+    } else if (timeWindow === 'weekly') {
+      const daysDiff = Math.floor((today - lastPunch) / (1000 * 60 * 60 * 24));
+      return daysDiff >= 7;
+    }
+    return true; // custom - allow anytime
+  },
+
+  // Get habits that can be punched today
+  getHabitsToPunchToday: () => {
+    const habits = get().habits;
+    return habits.filter(h => 
+      h.currentPunches < h.targetPunches && get().canPunchToday(h)
+    );
+  }
 }));

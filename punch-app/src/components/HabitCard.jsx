@@ -1,9 +1,13 @@
-import { Share2, RotateCcw, Trash2 } from 'lucide-react';
+import { Share2, RotateCcw, Trash2, Download } from 'lucide-react';
 import { useHabitStore } from '../store/habitStore';
 import { motion } from 'framer-motion';
+import { useState, useRef } from 'react';
+import { generateShareableCard, downloadCard, shareCard } from '../utils/shareCard';
 
 export default function HabitCard({ habit, onPunch }) {
   const { resetHabit, deleteHabit } = useHabitStore();
+  const cardRef = useRef(null);
+  const [sharing, setSharing] = useState(false);
   const progress = (habit.currentPunches / habit.targetPunches) * 100;
   const isComplete = habit.currentPunches >= habit.targetPunches;
 
@@ -19,12 +23,43 @@ export default function HabitCard({ habit, onPunch }) {
     }
   };
 
-  const handleShare = () => {
-    alert('Share feature coming soon! 📸');
+  const handleShare = async () => {
+    if (!cardRef.current) return;
+    
+    setSharing(true);
+    try {
+      const blob = await generateShareableCard(cardRef.current, habit);
+      if (blob) {
+        shareCard(blob, habit);
+      }
+    } catch (error) {
+      console.error('Error sharing card:', error);
+      alert('Error generating shareable card. Please try again.');
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!cardRef.current) return;
+    
+    setSharing(true);
+    try {
+      const blob = await generateShareableCard(cardRef.current, habit);
+      if (blob) {
+        downloadCard(blob, habit.title);
+      }
+    } catch (error) {
+      console.error('Error downloading card:', error);
+      alert('Error generating card. Please try again.');
+    } finally {
+      setSharing(false);
+    }
   };
 
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-2xl"
@@ -43,10 +78,19 @@ export default function HabitCard({ habit, onPunch }) {
           <div className="flex gap-1">
             <button
               onClick={handleShare}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              disabled={sharing}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
               title="Share"
             >
               <Share2 size={16} className="text-gray-600" />
+            </button>
+            <button
+              onClick={handleDownload}
+              disabled={sharing}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              title="Download"
+            >
+              <Download size={16} className="text-gray-600" />
             </button>
             <button
               onClick={handleReset}
