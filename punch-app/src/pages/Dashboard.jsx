@@ -1,16 +1,37 @@
-// src/components/Dashboard.jsx
-import { useState } from 'react';
-import { Plus, Sparkles, Target, LogOut, Share2 } from 'lucide-react';
+// src/pages/Dashboard.jsx
+import { useState, useEffect } from 'react';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
+import { Plus, Sparkles, Target, LogOut } from 'lucide-react';
 import { useHabitStore } from '../store/habitStore';
 import HabitCard from '../components/HabitCard';
 import CreateHabitModal from '../components/CreateHabitModal';
 import ReflectionModal from '../components/ReflectionModal';
+import Layout from '../components/Layout';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard({ user, onLogout }) {
+  const navigate = useNavigate();
   const habits = useHabitStore(state => state.habits);
   const punchHabit = useHabitStore(state => state.punchHabit);
+  const fetchHabits = useHabitStore(state => state.fetchHabits);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showReflection, setShowReflection] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchHabits(user.uid);
+    }
+  }, [user, fetchHabits]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const handlePunch = async (habitId) => {
     const isComplete = await punchHabit(habitId);
@@ -28,62 +49,57 @@ export default function Dashboard({ user, onLogout }) {
   const completedHabits = habits.filter(h => h.currentPunches === h.targetPunches).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+    <Layout>
+      <div className="w-full max-w-7xl mx-auto px-4 py-6">
+        {/* Header */}
+        <header className="bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 px-8 py-4 mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
-                <Target className="text-white" size={24} />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  PunchPass
-                </h1>
-                <p className="text-sm text-gray-600">Welcome back, {user.displayName?.split(' ')[0]}!</p>
-              </div>
+              <span className="text-2xl font-bold text-pink-500" style={{ fontFamily: 'Press Start 2P' }}>
+                Punchie
+              </span>
+              <span className="text-sm text-gray-600 hidden sm:inline">
+                Welcome, {user?.displayName?.split(' ')[0] || 'Friend'}! 🐰
+              </span>
             </div>
 
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowReflection(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow hover:shadow-lg transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-pink-100 hover:bg-pink-200 rounded-full transition-all text-pink-600"
               >
-                <Sparkles size={18} className="text-purple-600" />
-                <span className="text-sm font-medium hidden sm:inline">Weekly Reflection</span>
+                <Sparkles size={18} />
+                <span className="text-sm font-medium hidden sm:inline">Reflection</span>
               </button>
               <button
-                onClick={onLogout}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                onClick={handleLogout}
+                className="p-2 hover:bg-pink-100 rounded-full transition-colors text-pink-600"
                 title="Logout"
               >
-                <LogOut size={20} className="text-gray-600" />
+                <LogOut size={20} />
               </button>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Stats Overview */}
         <div className="mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Target className="text-purple-600" />
-              Today's Overview
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg p-6 border-2 border-pink-200">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-pink-600">
+              <Target size={24} />
+              Today's Overview ✨
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl p-4">
-                <div className="text-3xl font-bold text-purple-600">{todayHabits}</div>
-                <div className="text-sm text-gray-700 mt-1">Habits to punch today</div>
+              <div className="bg-gradient-to-br from-pink-100 to-pink-50 rounded-2xl p-4 border border-pink-200">
+                <div className="text-4xl font-bold text-pink-500">{todayHabits}</div>
+                <div className="text-sm text-gray-700 mt-1">Habits to punch today 🎯</div>
               </div>
-              <div className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl p-4">
-                <div className="text-3xl font-bold text-blue-600">{totalPunches}</div>
-                <div className="text-sm text-gray-700 mt-1">Total punches this week</div>
+              <div className="bg-gradient-to-br from-purple-100 to-purple-50 rounded-2xl p-4 border border-purple-200">
+                <div className="text-4xl font-bold text-purple-500">{totalPunches}</div>
+                <div className="text-sm text-gray-700 mt-1">Total punches 💪</div>
               </div>
-              <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl p-4">
-                <div className="text-3xl font-bold text-green-600">{completedHabits}</div>
+              <div className="bg-gradient-to-br from-green-100 to-green-50 rounded-2xl p-4 border border-green-200">
+                <div className="text-4xl font-bold text-green-500">{completedHabits}</div>
                 <div className="text-sm text-gray-700 mt-1">Rewards unlocked 🎉</div>
               </div>
             </div>
@@ -93,26 +109,27 @@ export default function Dashboard({ user, onLogout }) {
         {/* Habits Grid */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Your Punch Cards</h2>
+            <h2 className="text-2xl font-bold text-pink-600" style={{ fontFamily: 'Press Start 2P' }}>
+              Your Punch Cards 📇
+            </h2>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-400 to-pink-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              style={{ fontFamily: 'Press Start 2P', fontSize: '0.75rem' }}
             >
               <Plus size={20} />
-              <span className="font-medium">New Habit</span>
+              <span>New Habit</span>
             </button>
           </div>
 
           {habits.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
-                <Target className="text-purple-600" size={40} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">No habits yet!</h3>
-              <p className="text-gray-600 mb-6">Create your first punch card to start building better habits</p>
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg p-12 text-center border-2 border-pink-200">
+              <div className="text-6xl mb-4">🐰</div>
+              <h3 className="text-xl font-bold text-pink-600 mb-2">No habits yet!</h3>
+              <p className="text-gray-600 mb-6">Create your first punch card to start your journey ✨</p>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
+                className="px-8 py-3 bg-gradient-to-r from-pink-400 to-pink-500 text-white rounded-full font-medium hover:shadow-lg transition-all"
               >
                 Create Your First Habit
               </button>
@@ -129,33 +146,10 @@ export default function Dashboard({ user, onLogout }) {
             </div>
           )}
         </div>
-
-        {/* Info Card */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl shadow-xl p-8 text-white">
-          <h2 className="text-2xl font-bold mb-4">🚀 Coming Soon: Gemini AI Features</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
-              <h3 className="font-bold mb-2">✨ Smart Habit Suggestions</h3>
-              <p className="text-white/90">Tell us your goals and get personalized habit recommendations</p>
-            </div>
-            <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
-              <h3 className="font-bold mb-2">🎨 AI Theme Generator</h3>
-              <p className="text-white/90">Describe your vibe and get custom color palettes</p>
-            </div>
-            <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
-              <h3 className="font-bold mb-2">💬 Weekly AI Coach</h3>
-              <p className="text-white/90">Get personalized feedback and habit adjustments</p>
-            </div>
-            <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
-              <h3 className="font-bold mb-2">🏆 Reward Ideas</h3>
-              <p className="text-white/90">AI-powered reward suggestions tailored to you</p>
-            </div>
-          </div>
-        </div>
-      </main>
+      </div>
 
       {/* Modals */}
-      {showCreateModal && (
+      {showCreateModal && user && (
         <CreateHabitModal
           userId={user.uid}
           onClose={() => setShowCreateModal(false)}
@@ -165,6 +159,6 @@ export default function Dashboard({ user, onLogout }) {
       {showReflection && (
         <ReflectionModal onClose={() => setShowReflection(false)} />
       )}
-    </div>
+    </Layout>
   );
 }
