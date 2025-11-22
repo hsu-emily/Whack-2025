@@ -5,9 +5,12 @@ import About from './pages/About';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import CreatePunchPass from './pages/CreatePunchPass';
+import CustomCursor from './components/CustomCursor';
+
 function App() {
   return (
     <Router>
+      <CustomCursor size={80} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
