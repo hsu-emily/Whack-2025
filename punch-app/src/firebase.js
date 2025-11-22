@@ -23,19 +23,27 @@ const firebaseConfig = {
 
 // Validate required Firebase config values
 const requiredFields = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
-const missingFields = requiredFields.filter(field => !firebaseConfig[field] || firebaseConfig[field] === undefined);
+const missingFields = requiredFields.filter(field => !firebaseConfig[field] || firebaseConfig[field] === undefined || firebaseConfig[field] === '');
 
 if (missingFields.length > 0) {
-  console.error('Firebase configuration error: Missing required environment variables:', missingFields);
-  console.error('Please create a .env file with the following variables:');
-  missingFields.forEach(field => {
-    console.error(`  VITE_FIREBASE_${field.toUpperCase().replace(/([A-Z])/g, '_$1')}`);
-  });
+  const errorMsg = `Firebase configuration error: Missing required environment variables: ${missingFields.join(', ')}.\nPlease create a .env file with the following variables:\n${missingFields.map(field => `  VITE_FIREBASE_${field.toUpperCase().replace(/([A-Z])/g, '_$1')}`).join('\n')}`;
+  console.error(errorMsg);
+  throw new Error(errorMsg);
 }
 
 // Initialize Firebase app
 let app;
 try {
+  // Only initialize if we have valid config values (not empty strings)
+  const hasValidConfig = requiredFields.every(field => {
+    const value = firebaseConfig[field];
+    return value && value !== '' && value !== undefined;
+  });
+  
+  if (!hasValidConfig) {
+    throw new Error('Firebase configuration is invalid. Please check your .env file.');
+  }
+  
   app = initializeApp(firebaseConfig);
 } catch (error) {
   console.error('Firebase initialization error:', error.message);
@@ -44,6 +52,7 @@ try {
   console.error('  - appId does not match your Firebase project');
   console.error('  - projectId is incorrect');
   console.error('  - apiKey is invalid or expired');
+  console.error('  - Missing environment variables in .env file');
   throw error; // Re-throw to prevent silent failures
 }
 
@@ -69,10 +78,30 @@ if (typeof window !== 'undefined') {
   }
 }
 
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+// Initialize Firebase services only after app is confirmed to be initialized
+let auth, googleProvider, db, storage;
+
+try {
+  if (!app) {
+    throw new Error('Firebase app was not initialized');
+  }
+  
+  // Initialize Auth - this must happen after app is initialized
+  auth = getAuth(app);
+  googleProvider = new GoogleAuthProvider();
+  db = getFirestore(app);
+  storage = getStorage(app);
+  
+  // Verify auth was properly initialized
+  if (!auth) {
+    throw new Error('Firebase Auth failed to initialize');
+  }
+} catch (error) {
+  console.error('Firebase services initialization error:', error.message);
+  throw error;
+}
+
+export { auth, googleProvider, db, storage };
 
 
 // match /punchPasses/{passId} {
