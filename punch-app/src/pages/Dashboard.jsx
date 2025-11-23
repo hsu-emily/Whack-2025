@@ -89,44 +89,45 @@ export default function Dashboard({ user, onLogout }) {
     <Layout>
       <div className="dashboard-container">
         {/* Header */}
+        <div className="dashboard-header-right-new">
+        <button
+          onClick={() => setShowReflection(true)}
+          className="btn-reflection-new"
+        >
+          <Sparkles size={18} />
+          <span className="btn-reflection-text">Reflection</span>
+        </button>
+        {bunnyIcon && (
+          <button
+            onClick={() => {
+              // Add bunny click handler here if needed
+              console.log('Bunny clicked!');
+            }}
+            className="btn-bunny"
+            title="Bunny"
+            aria-label="Bunny"
+          >
+            <img 
+              src={bunnyIcon} 
+              alt="Bunny" 
+              style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+            />
+          </button>
+        )}
+        <button
+          onClick={handleLogout}
+          className="btn-logout-new"
+          title="Logout"
+        >
+          <LogOut size={20} />
+        </button>
+      </div>
+      
+      
         <header className="dashboard-header-new">
           <h1 className="dashboard-title-new">
             {user?.displayName?.split(' ')[0] || 'Friend'}'s Habits.
           </h1>
-          
-          <div className="dashboard-header-right-new">
-            <button
-              onClick={() => setShowReflection(true)}
-              className="btn-reflection-new"
-            >
-              <Sparkles size={18} />
-              <span className="btn-reflection-text">Reflection</span>
-            </button>
-            {bunnyIcon && (
-              <button
-                onClick={() => {
-                  // Add bunny click handler here if needed
-                  console.log('Bunny clicked!');
-                }}
-                className="btn-bunny"
-                title="Bunny"
-                aria-label="Bunny"
-              >
-                <img 
-                  src={bunnyIcon} 
-                  alt="Bunny" 
-                  style={{ width: '24px', height: '24px', objectFit: 'contain' }}
-                />
-              </button>
-            )}
-            <button
-              onClick={handleLogout}
-              className="btn-logout-new"
-              title="Logout"
-            >
-              <LogOut size={20} />
-            </button>
-          </div>
         </header>
 
         <button

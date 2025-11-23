@@ -2216,19 +2216,12 @@ textarea {
 
 .card-zoom-card {
   width: 100%;
-  max-width: 600px; /* Default, can be overridden by inline style */
   aspect-ratio: 1004/591;
   position: relative;
   transition: transform 0.2s ease, max-width 0.3s ease;
-  /* Ensure card fits within viewport with padding */
-  max-height: calc(100vh - 4rem);
-}
-
-/* Constrain width based on height if needed */
-@media (max-height: 700px) {
-  .card-zoom-card {
-    max-width: min(600px, calc((100vh - 4rem) * 1004 / 591)) !important;
-  }
+  /* Match CardLayoutEditor preview size */
+  max-height: 350px;
+  max-width: calc(350px * 1004 / 591);
 }
 
 .card-zoom-card:hover {
@@ -2238,19 +2231,6 @@ textarea {
 .card-zoom-cursor {
   will-change: transform;
   transition: transform 0.05s ease-out;
-}
-
-/* Media queries only apply if no inline style is set */
-@media (min-width: 640px) {
-  .card-zoom-card:not([style*="max-width"]) {
-    max-width: 700px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .card-zoom-card:not([style*="max-width"]) {
-    max-width: 800px;
-  }
 }
 
 /* Print Styles */

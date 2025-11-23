@@ -1,9 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { Home, LayoutDashboard, Settings, Undo2, X } from 'lucide-react';
+import { LayoutDashboard, MousePointer2, Settings, Trash2, Undo2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import holePunchCursor from '../assets/cursors/holePunch.png';
 import holePunchClickCursor from '../assets/cursors/holePunchClick.png';
+import { useHabitStore } from '../store/habitStore';
 import { getCardLayout } from '../utils/cardLayouts';
 import PunchCardPreview from './PunchCardPreview';
 
@@ -25,12 +26,14 @@ for (const path in iconModules) {
 
 export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
   const navigate = useNavigate();
+  const { deleteHabit } = useHabitStore();
   const cardRef = useRef(null);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [justPunched, setJustPunched] = useState(false);
+  const [clickEnabled, setClickEnabled] = useState(true);
 
   // Helper function to reduce font size by 25%
   const reduceFontSize = (fontSize) => {
@@ -150,8 +153,8 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
 
   const handleCardClick = (e) => {
     e.stopPropagation();
-    // Only punch if the card is not complete
-    if (onPunch && habit.currentPunches < habit.targetPunches && !justPunched) {
+    // Only punch if clicking is enabled, the card is not complete, and we haven't just punched
+    if (clickEnabled && onPunch && habit.currentPunches < habit.targetPunches && !justPunched) {
       onPunch();
       setJustPunched(true);
       // Stay on page for 2 seconds after punching
@@ -168,14 +171,21 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
     }
   };
 
-  const handleNavigateHome = () => {
-    navigate('/');
-    onClose();
-  };
-
   const handleNavigateDashboard = () => {
     navigate('/dashboard');
     onClose();
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this habit card? This action cannot be undone.')) {
+      deleteHabit(habit.id);
+      onClose();
+    }
+  };
+
+  const handleToggleClick = () => {
+    setClickEnabled(!clickEnabled);
+    setShowSettings(false);
   };
 
   return (
@@ -202,14 +212,6 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
         >
           {/* Navigation Buttons - Top Left */}
           <div className="card-zoom-nav-buttons">
-            <button
-              className="card-zoom-nav-btn"
-              onClick={handleNavigateHome}
-              aria-label="Go to Home"
-              title="Home"
-            >
-              <Home size={20} />
-            </button>
             <button
               className="card-zoom-nav-btn"
               onClick={handleNavigateDashboard}
@@ -241,11 +243,26 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
               >
                 <button
                   className="card-zoom-settings-item"
+                  onClick={handleToggleClick}
+                >
+                  <MousePointer2 size={16} />
+                  <span>{clickEnabled ? 'Disable Clicking' : 'Enable Clicking'}</span>
+                </button>
+                <button
+                  className="card-zoom-settings-item"
                   onClick={handleUndo}
                   disabled={habit.currentPunches === 0}
                 >
                   <Undo2 size={16} />
                   <span>Undo Last Punch</span>
+                </button>
+                <button
+                  className="card-zoom-settings-item"
+                  onClick={handleDelete}
+                  style={{ color: 'var(--color-error)' }}
+                >
+                  <Trash2 size={16} />
+                  <span>Delete Card</span>
                 </button>
               </motion.div>
             )}

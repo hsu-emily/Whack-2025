@@ -1,5 +1,5 @@
-import { Check, Copy, Download, Upload } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Copy } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import PunchCardPreview from '../components/PunchCardPreview';
 
 // Load punch card PNGs
@@ -35,12 +35,6 @@ export default function CardLayoutEditor() {
   const [currentPunches, setCurrentPunches] = useState(3);
   const [targetPunches, setTargetPunches] = useState(10);
   const [editingSize, setEditingSize] = useState('medium'); // 'medium' or 'large'
-  
-  // Refs for measuring dimensions
-  const mediumPreviewRef = useRef(null);
-  const largePreviewRef = useRef(null);
-  const [mediumDimensions, setMediumDimensions] = useState({ width: 0, height: 0 });
-  const [largeDimensions, setLargeDimensions] = useState({ width: 0, height: 0 });
 
   // Medium size settings
   const [titleTopMedium, setTitleTopMedium] = useState(defaultLayout.title.top);
@@ -259,283 +253,84 @@ export default function CardLayoutEditor() {
     }, null, 2);
   }, [layoutMedium, layoutLarge, numRows, punchesPerRow]);
 
-  const [copiedType, setCopiedType] = useState(null);
-  const [importError, setImportError] = useState('');
-  const [importText, setImportText] = useState('');
-
   const copyToClipboard = () => {
     navigator.clipboard.writeText(jsonOutput);
-    setCopiedType('json');
-    setTimeout(() => setCopiedType(null), 2000);
+    alert('Copied to clipboard!');
   };
 
   const copyAsCode = () => {
-    const code = `  '${selectedCard}': {
-    title: { 
-      topMedium: '${titleTopMedium}', 
-      topLarge: '${titleTopLarge}',
-      leftMedium: '${titleLeftMedium}', 
-      leftLarge: '${titleLeftLarge}',
-      textAlign: '${titleTextAlignMedium}', 
-      colorMedium: '${titleColorMedium}', 
-      colorLarge: '${titleColorLarge}',
-      fontSizeMedium: '${titleFontSizeMedium}', 
-      fontSizeLarge: '${titleFontSizeLarge}',
-      fontFamilyMedium: '${titleFontFamilyMedium}', 
-      fontFamilyLarge: '${titleFontFamilyLarge}',
-      fontWeight: 'bold',
-      widthMedium: '${titleWidthMedium}', 
-      widthLarge: '${titleWidthLarge}'
-    },
-    description: { 
-      topMedium: '${descTopMedium}', 
-      topLarge: '${descTopLarge}',
-      leftMedium: '${descLeftMedium}', 
-      leftLarge: '${descLeftLarge}',
-      textAlign: '${descTextAlignMedium}',
-      colorMedium: '${descColorMedium}', 
-      colorLarge: '${descColorLarge}',
-      fontSizeMedium: '${descFontSizeMedium}', 
-      fontSizeLarge: '${descFontSizeLarge}',
-      fontFamilyMedium: '${descFontFamilyMedium}', 
-      fontFamilyLarge: '${descFontFamilyLarge}',
-      widthMedium: '${descWidthMedium}', 
-      widthLarge: '${descWidthLarge}'
-    },
-    punchGrid: { 
-      topMedium: '${gridTopMedium}', 
-      topLarge: '${gridTopLarge}',
-      leftMedium: '${gridLeftMedium}', 
-      leftLarge: '${gridLeftLarge}',
-      transform: '${gridTransformMedium}',
-      punchCircleSizeMedium: '${punchCircleSizeMedium}', 
-      punchCircleSizeLarge: '${punchCircleSizeLarge}',
-      punchIconSizeMedium: '${punchIconSizeMedium}', 
-      punchIconSizeLarge: '${punchIconSizeLarge}',
-      punchHorizontalGapMedium: '${punchHorizontalGapMedium}', 
-      punchHorizontalGapLarge: '${punchHorizontalGapLarge}',
-      punchVerticalGapMedium: '${punchVerticalGapMedium}', 
-      punchVerticalGapLarge: '${punchVerticalGapLarge}',
-      numRows: ${numRows}, 
-      punchesPerRow: ${punchesPerRow}
-    }
-  }`;
-    navigator.clipboard.writeText(code);
-    setCopiedType('code');
-    setTimeout(() => setCopiedType(null), 2000);
-  };
-
-  const copyAsFullEntry = () => {
     const code = `'${selectedCard}': {
-    ...baseLayout,
     title: { 
-      ...baseLayout.title, 
-      topMedium: '${titleTopMedium}', 
-      topLarge: '${titleTopLarge}',
-      leftMedium: '${titleLeftMedium}', 
-      leftLarge: '${titleLeftLarge}',
+      topMedium: '${titleTopMedium}', topLarge: '${titleTopLarge}',
+      leftMedium: '${titleLeftMedium}', leftLarge: '${titleLeftLarge}',
       textAlign: '${titleTextAlignMedium}', 
-      colorMedium: '${titleColorMedium}', 
-      colorLarge: '${titleColorLarge}',
-      fontSizeMedium: '${titleFontSizeMedium}', 
-      fontSizeLarge: '${titleFontSizeLarge}',
-      fontFamilyMedium: '${titleFontFamilyMedium}', 
-      fontFamilyLarge: '${titleFontFamilyLarge}',
+      colorMedium: '${titleColorMedium}', colorLarge: '${titleColorLarge}',
+      fontSizeMedium: '${titleFontSizeMedium}', fontSizeLarge: '${titleFontSizeLarge}',
+      fontFamilyMedium: '${titleFontFamilyMedium}', fontFamilyLarge: '${titleFontFamilyLarge}',
       fontWeight: 'bold',
-      widthMedium: '${titleWidthMedium}', 
-      widthLarge: '${titleWidthLarge}'
+      widthMedium: '${titleWidthMedium}', widthLarge: '${titleWidthLarge}'
     },
     description: { 
-      ...baseLayout.description,
-      topMedium: '${descTopMedium}', 
-      topLarge: '${descTopLarge}',
-      leftMedium: '${descLeftMedium}', 
-      leftLarge: '${descLeftLarge}',
+      topMedium: '${descTopMedium}', topLarge: '${descTopLarge}',
+      leftMedium: '${descLeftMedium}', leftLarge: '${descLeftLarge}',
       textAlign: '${descTextAlignMedium}',
-      colorMedium: '${descColorMedium}', 
-      colorLarge: '${descColorLarge}',
-      fontSizeMedium: '${descFontSizeMedium}', 
-      fontSizeLarge: '${descFontSizeLarge}',
-      fontFamilyMedium: '${descFontFamilyMedium}', 
-      fontFamilyLarge: '${descFontFamilyLarge}',
-      widthMedium: '${descWidthMedium}', 
-      widthLarge: '${descWidthLarge}'
+      colorMedium: '${descColorMedium}', colorLarge: '${descColorLarge}',
+      fontSizeMedium: '${descFontSizeMedium}', fontSizeLarge: '${descFontSizeLarge}',
+      fontFamilyMedium: '${descFontFamilyMedium}', fontFamilyLarge: '${descFontFamilyLarge}',
+      widthMedium: '${descWidthMedium}', widthLarge: '${descWidthLarge}'
     },
     punchGrid: { 
-      ...baseLayout.punchGrid,
-      topMedium: '${gridTopMedium}', 
-      topLarge: '${gridTopLarge}',
-      leftMedium: '${gridLeftMedium}', 
-      leftLarge: '${gridLeftLarge}',
+      topMedium: '${gridTopMedium}', topLarge: '${gridTopLarge}',
+      leftMedium: '${gridLeftMedium}', leftLarge: '${gridLeftLarge}',
       transform: '${gridTransformMedium}',
-      punchCircleSizeMedium: '${punchCircleSizeMedium}', 
-      punchCircleSizeLarge: '${punchCircleSizeLarge}',
-      punchIconSizeMedium: '${punchIconSizeMedium}', 
-      punchIconSizeLarge: '${punchIconSizeLarge}',
-      punchHorizontalGapMedium: '${punchHorizontalGapMedium}', 
-      punchHorizontalGapLarge: '${punchHorizontalGapLarge}',
-      punchVerticalGapMedium: '${punchVerticalGapMedium}', 
-      punchVerticalGapLarge: '${punchVerticalGapLarge}',
-      numRows: ${numRows}, 
-      punchesPerRow: ${punchesPerRow}
+      punchCircleSizeMedium: '${punchCircleSizeMedium}', punchCircleSizeLarge: '${punchCircleSizeLarge}',
+      punchIconSizeMedium: '${punchIconSizeMedium}', punchIconSizeLarge: '${punchIconSizeLarge}',
+      punchHorizontalGapMedium: '${punchHorizontalGapMedium}', punchHorizontalGapLarge: '${punchHorizontalGapLarge}',
+      punchVerticalGapMedium: '${punchVerticalGapMedium}', punchVerticalGapLarge: '${punchVerticalGapLarge}',
+      numRows: ${numRows}, punchesPerRow: ${punchesPerRow}
     }
   }`;
     navigator.clipboard.writeText(code);
-    setCopiedType('full');
-    setTimeout(() => setCopiedType(null), 2000);
-  };
-
-  const handleImport = (text) => {
-    try {
-      const parsed = JSON.parse(text);
-      
-      // Try to extract values from the parsed JSON
-      if (parsed.title) {
-        if (parsed.title.topMedium) setTitleTopMedium(parsed.title.topMedium);
-        if (parsed.title.topLarge) setTitleTopLarge(parsed.title.topLarge);
-        if (parsed.title.leftMedium) setTitleLeftMedium(parsed.title.leftMedium);
-        if (parsed.title.leftLarge) setTitleLeftLarge(parsed.title.leftLarge);
-        if (parsed.title.textAlign) {
-          setTitleTextAlignMedium(parsed.title.textAlign);
-          setTitleTextAlignLarge(parsed.title.textAlign);
-        }
-        if (parsed.title.colorMedium) setTitleColorMedium(parsed.title.colorMedium);
-        if (parsed.title.colorLarge) setTitleColorLarge(parsed.title.colorLarge);
-        if (parsed.title.fontSizeMedium) setTitleFontSizeMedium(parsed.title.fontSizeMedium);
-        if (parsed.title.fontSizeLarge) setTitleFontSizeLarge(parsed.title.fontSizeLarge);
-        if (parsed.title.fontFamilyMedium) setTitleFontFamilyMedium(parsed.title.fontFamilyMedium);
-        if (parsed.title.fontFamilyLarge) setTitleFontFamilyLarge(parsed.title.fontFamilyLarge);
-        if (parsed.title.widthMedium) setTitleWidthMedium(parsed.title.widthMedium);
-        if (parsed.title.widthLarge) setTitleWidthLarge(parsed.title.widthLarge);
-      }
-      
-      if (parsed.description) {
-        if (parsed.description.topMedium) setDescTopMedium(parsed.description.topMedium);
-        if (parsed.description.topLarge) setDescTopLarge(parsed.description.topLarge);
-        if (parsed.description.leftMedium) setDescLeftMedium(parsed.description.leftMedium);
-        if (parsed.description.leftLarge) setDescLeftLarge(parsed.description.leftLarge);
-        if (parsed.description.textAlign) {
-          setDescTextAlignMedium(parsed.description.textAlign);
-          setDescTextAlignLarge(parsed.description.textAlign);
-        }
-        if (parsed.description.colorMedium) setDescColorMedium(parsed.description.colorMedium);
-        if (parsed.description.colorLarge) setDescColorLarge(parsed.description.colorLarge);
-        if (parsed.description.fontSizeMedium) setDescFontSizeMedium(parsed.description.fontSizeMedium);
-        if (parsed.description.fontSizeLarge) setDescFontSizeLarge(parsed.description.fontSizeLarge);
-        if (parsed.description.fontFamilyMedium) setDescFontFamilyMedium(parsed.description.fontFamilyMedium);
-        if (parsed.description.fontFamilyLarge) setDescFontFamilyLarge(parsed.description.fontFamilyLarge);
-        if (parsed.description.widthMedium) setDescWidthMedium(parsed.description.widthMedium);
-        if (parsed.description.widthLarge) setDescWidthLarge(parsed.description.widthLarge);
-      }
-      
-      if (parsed.punchGrid) {
-        if (parsed.punchGrid.topMedium) setGridTopMedium(parsed.punchGrid.topMedium);
-        if (parsed.punchGrid.topLarge) setGridTopLarge(parsed.punchGrid.topLarge);
-        if (parsed.punchGrid.leftMedium) setGridLeftMedium(parsed.punchGrid.leftMedium);
-        if (parsed.punchGrid.leftLarge) setGridLeftLarge(parsed.punchGrid.leftLarge);
-        if (parsed.punchGrid.transform) {
-          setGridTransformMedium(parsed.punchGrid.transform);
-          setGridTransformLarge(parsed.punchGrid.transform);
-        }
-        if (parsed.punchGrid.punchCircleSizeMedium) setPunchCircleSizeMedium(parsed.punchGrid.punchCircleSizeMedium);
-        if (parsed.punchGrid.punchCircleSizeLarge) setPunchCircleSizeLarge(parsed.punchGrid.punchCircleSizeLarge);
-        if (parsed.punchGrid.punchIconSizeMedium) setPunchIconSizeMedium(parsed.punchGrid.punchIconSizeMedium);
-        if (parsed.punchGrid.punchIconSizeLarge) setPunchIconSizeLarge(parsed.punchGrid.punchIconSizeLarge);
-        if (parsed.punchGrid.punchHorizontalGapMedium) setPunchHorizontalGapMedium(parsed.punchGrid.punchHorizontalGapMedium);
-        if (parsed.punchGrid.punchHorizontalGapLarge) setPunchHorizontalGapLarge(parsed.punchGrid.punchHorizontalGapLarge);
-        if (parsed.punchGrid.punchVerticalGapMedium) setPunchVerticalGapMedium(parsed.punchGrid.punchVerticalGapMedium);
-        if (parsed.punchGrid.punchVerticalGapLarge) setPunchVerticalGapLarge(parsed.punchGrid.punchVerticalGapLarge);
-        if (parsed.punchGrid.numRows) setNumRows(parsed.punchGrid.numRows);
-        if (parsed.punchGrid.punchesPerRow) setPunchesPerRow(parsed.punchGrid.punchesPerRow);
-      }
-      
-      setImportError('');
-      alert('Layout imported successfully!');
-    } catch (error) {
-      setImportError('Invalid JSON format. Please check your input.');
-      console.error('Import error:', error);
-    }
+    alert('Code copied to clipboard!');
   };
 
   const icon1 = selectedIcon1 ? iconMap[selectedIcon1] : null;
   const icon2 = selectedIcon2 ? iconMap[selectedIcon2] : null;
   const cardImage = selectedCard ? punchCardMap[selectedCard] : null;
 
-  // Track dimensions of preview cards
-  useEffect(() => {
-    const updateDimensions = () => {
-      if (mediumPreviewRef.current) {
-        const rect = mediumPreviewRef.current.getBoundingClientRect();
-        setMediumDimensions({
-          width: Math.round(rect.width),
-          height: Math.round(rect.height),
-        });
-      }
-      if (largePreviewRef.current) {
-        const rect = largePreviewRef.current.getBoundingClientRect();
-        setLargeDimensions({
-          width: Math.round(rect.width),
-          height: Math.round(rect.height),
-        });
-      }
-    };
-    
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    
-    // Use ResizeObserver for more accurate tracking
-    const observers = [];
-    if (mediumPreviewRef.current) {
-      const observer = new ResizeObserver(updateDimensions);
-      observer.observe(mediumPreviewRef.current);
-      observers.push(observer);
-    }
-    if (largePreviewRef.current) {
-      const observer = new ResizeObserver(updateDimensions);
-      observer.observe(largePreviewRef.current);
-      observers.push(observer);
-    }
-    
-    return () => {
-      window.removeEventListener('resize', updateDimensions);
-      observers.forEach(obs => obs.disconnect());
-    };
-  }, [cardImage, layoutMedium, layoutLarge]);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
-      <div className="max-w-[1800px] mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-4 text-pink-600">Card Layout Editor</h1>
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-6 text-pink-600">Card Layout Editor</h1>
         
-        {/* Top Controls Bar */}
-        <div className="bg-white rounded-lg shadow-lg p-4 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Preview Section */}
+          <div className="bg-white rounded-lg shadow-lg p-4">
+            <h2 className="text-xl font-bold mb-4">Preview</h2>
+            
             {/* Size Toggle */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Editing Size:</label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setEditingSize('medium')}
-                  className={`flex-1 px-4 py-2 rounded text-sm font-medium ${editingSize === 'medium' ? 'bg-purple-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-                >
-                  Medium
-                </button>
-                <button
-                  onClick={() => setEditingSize('large')}
-                  className={`flex-1 px-4 py-2 rounded text-sm font-medium ${editingSize === 'large' ? 'bg-purple-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-                >
-                  Large
-                </button>
-              </div>
+            <div className="mb-4 flex gap-2">
+              <button
+                onClick={() => setEditingSize('medium')}
+                className={`flex-1 px-4 py-2 rounded ${editingSize === 'medium' ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}
+              >
+                Medium
+              </button>
+              <button
+                onClick={() => setEditingSize('large')}
+                className={`flex-1 px-4 py-2 rounded ${editingSize === 'large' ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}
+              >
+                Large
+              </button>
             </div>
             
             {/* Card Selection */}
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-medium mb-2">Card Image:</label>
               <select
                 value={selectedCard}
                 onChange={(e) => setSelectedCard(e.target.value)}
-                className="w-full p-2 border rounded text-sm"
+                className="w-full p-2 border rounded"
               >
                 {cardNames.map(name => (
                   <option key={name} value={name}>{name}</option>
@@ -544,132 +339,99 @@ export default function CardLayoutEditor() {
             </div>
 
             {/* Icon Selection */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Icon 1:</label>
-              <select
-                value={selectedIcon1}
-                onChange={(e) => setSelectedIcon1(e.target.value)}
-                className="w-full p-2 border rounded text-sm"
-              >
-                {iconNames.map(name => (
-                  <option key={name} value={name}>{name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Icon 2:</label>
-              <select
-                value={selectedIcon2}
-                onChange={(e) => setSelectedIcon2(e.target.value)}
-                className="w-full p-2 border rounded text-sm"
-              >
-                {iconNames.map(name => (
-                  <option key={name} value={name}>{name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          {/* Punches */}
-          <div className="grid grid-cols-2 gap-4 mt-4 max-w-xs">
-            <div>
-              <label className="block text-sm font-medium mb-2">Current Punches:</label>
-              <input
-                type="number"
-                value={currentPunches}
-                onChange={(e) => setCurrentPunches(parseInt(e.target.value) || 0)}
-                className="w-full p-2 border rounded text-sm"
-                min="0"
-                max={targetPunches}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Target Punches:</label>
-              <input
-                type="number"
-                value={targetPunches}
-                onChange={(e) => setTargetPunches(parseInt(e.target.value) || 0)}
-                className="w-full p-2 border rounded text-sm"
-                min="1"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Preview Section - Side by Side */}
-          <div className="xl:col-span-2 bg-white rounded-lg shadow-lg p-4">
-            <h2 className="text-xl font-bold mb-4">Live Preview</h2>
-            
-            {/* Preview Cards - Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold text-pink-600">Medium Size</h3>
-                  <span className="text-xs text-gray-500">Carousel View</span>
-                </div>
-                <div className="relative">
-                  <div 
-                    ref={mediumPreviewRef}
-                    className="border-4 border-pink-200 rounded-lg overflow-hidden" 
-                    style={{ aspectRatio: '1004/591', maxHeight: '350px' }}
-                  >
-                    {cardImage && (
-                      <PunchCardPreview
-                        name="Sample Title"
-                        description="This is a sample description text"
-                        icon1={icon1}
-                        icon2={icon2}
-                        cardImage={cardImage}
-                        isDailyPunch={false}
-                        titlePlacement={layoutMedium.title}
-                        descriptionPlacement={layoutMedium.description}
-                        punchGridPlacement={layoutMedium.punchGrid}
-                        currentPunches={currentPunches}
-                        targetPunches={targetPunches}
-                        size="medium"
-                      />
-                    )}
-                  </div>
-                  {mediumDimensions.width > 0 && mediumDimensions.height > 0 && (
-                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm border-2 border-pink-300 rounded-md px-2 py-1 text-xs font-semibold text-pink-600 shadow-md">
-                      {mediumDimensions.width} × {mediumDimensions.height} px
-                    </div>
+                <label className="block text-sm font-medium mb-2">Icon 1:</label>
+                <select
+                  value={selectedIcon1}
+                  onChange={(e) => setSelectedIcon1(e.target.value)}
+                  className="w-full p-2 border rounded"
+                >
+                  {iconNames.map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Icon 2:</label>
+                <select
+                  value={selectedIcon2}
+                  onChange={(e) => setSelectedIcon2(e.target.value)}
+                  className="w-full p-2 border rounded"
+                >
+                  {iconNames.map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Punches */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Current Punches:</label>
+                <input
+                  type="number"
+                  value={currentPunches}
+                  onChange={(e) => setCurrentPunches(parseInt(e.target.value) || 0)}
+                  className="w-full p-2 border rounded"
+                  min="0"
+                  max={targetPunches}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Target Punches:</label>
+                <input
+                  type="number"
+                  value={targetPunches}
+                  onChange={(e) => setTargetPunches(parseInt(e.target.value) || 0)}
+                  className="w-full p-2 border rounded"
+                  min="1"
+                />
+              </div>
+            </div>
+
+            {/* Preview Cards - Both Medium and Large */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium mb-2">Medium Preview</h3>
+                <div className="border-4 border-pink-200 rounded-lg overflow-hidden" style={{ aspectRatio: '1004/591', maxHeight: '300px' }}>
+                  {cardImage && (
+                    <PunchCardPreview
+                      name="Sample Title"
+                      description="This is a sample description text"
+                      icon1={icon1}
+                      icon2={icon2}
+                      cardImage={cardImage}
+                      isDailyPunch={false}
+                      titlePlacement={layoutMedium.title}
+                      descriptionPlacement={layoutMedium.description}
+                      punchGridPlacement={layoutMedium.punchGrid}
+                      currentPunches={currentPunches}
+                      targetPunches={targetPunches}
+                      size="medium"
+                    />
                   )}
                 </div>
               </div>
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold text-purple-600">Large Size</h3>
-                  <span className="text-xs text-gray-500">Zoom Modal View</span>
-                </div>
-                <div className="relative">
-                  <div 
-                    ref={largePreviewRef}
-                    className="border-4 border-purple-200 rounded-lg overflow-hidden" 
-                    style={{ aspectRatio: '1004/591', maxHeight: '350px' }}
-                  >
-                    {cardImage && (
-                      <PunchCardPreview
-                        name="Sample Title"
-                        description="This is a sample description text"
-                        icon1={icon1}
-                        icon2={icon2}
-                        cardImage={cardImage}
-                        isDailyPunch={false}
-                        titlePlacement={layoutLarge.title}
-                        descriptionPlacement={layoutLarge.description}
-                        punchGridPlacement={layoutLarge.punchGrid}
-                        currentPunches={currentPunches}
-                        targetPunches={targetPunches}
-                        size="large"
-                      />
-                    )}
-                  </div>
-                  {largeDimensions.width > 0 && largeDimensions.height > 0 && (
-                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm border-2 border-purple-300 rounded-md px-2 py-1 text-xs font-semibold text-purple-600 shadow-md">
-                      {largeDimensions.width} × {largeDimensions.height} px
-                    </div>
+                <h3 className="text-sm font-medium mb-2">Large Preview</h3>
+                <div className="border-4 border-purple-200 rounded-lg overflow-hidden" style={{ aspectRatio: '1004/591', maxHeight: '400px' }}>
+                  {cardImage && (
+                    <PunchCardPreview
+                      name="Sample Title"
+                      description="This is a sample description text"
+                      icon1={icon1}
+                      icon2={icon2}
+                      cardImage={cardImage}
+                      isDailyPunch={false}
+                      titlePlacement={layoutLarge.title}
+                      descriptionPlacement={layoutLarge.description}
+                      punchGridPlacement={layoutLarge.punchGrid}
+                      currentPunches={currentPunches}
+                      targetPunches={targetPunches}
+                      size="large"
+                    />
                   )}
                 </div>
               </div>
@@ -677,15 +439,10 @@ export default function CardLayoutEditor() {
           </div>
 
           {/* Controls Section */}
-          <div className="bg-white rounded-lg shadow-lg p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-            <div className="sticky top-0 bg-white pb-2 mb-4 border-b">
-              <h2 className="text-xl font-bold">
-                {editingSize === 'large' ? 'Large' : 'Medium'} Size Controls
-              </h2>
-              <p className="text-xs text-gray-500 mt-1">
-                Adjust values for {editingSize === 'large' ? 'zoom modal' : 'carousel'} view
-              </p>
-            </div>
+          <div className="bg-white rounded-lg shadow-lg p-4 overflow-y-auto max-h-[calc(100vh-2rem)]">
+            <h2 className="text-xl font-bold mb-4">
+              {editingSize === 'large' ? 'Large' : 'Medium'} Size Controls
+            </h2>
 
             {/* Title Controls */}
             <div className="mb-6 p-4 bg-purple-50 rounded">
@@ -939,108 +696,28 @@ export default function CardLayoutEditor() {
             </div>
 
             {/* Output Section */}
-            <div className="mb-4 border-t pt-4">
-              <h3 className="text-lg font-bold mb-3 text-gray-800">Export & Import</h3>
-              
-              {/* Copy Buttons */}
-              <div className="flex flex-wrap gap-2 mb-4">
+            <div className="mb-4">
+              <div className="flex gap-2 mb-2">
                 <button
                   onClick={copyToClipboard}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all shadow-sm ${
-                    copiedType === 'json' 
-                      ? 'bg-green-600 text-white shadow-md' 
-                      : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-md'
-                  }`}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
                 >
-                  {copiedType === 'json' ? <Check size={16} /> : <Copy size={16} />}
-                  {copiedType === 'json' ? 'Copied!' : 'Copy JSON'}
+                  <Copy size={16} />
+                  Copy JSON
                 </button>
                 <button
                   onClick={copyAsCode}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all shadow-sm ${
-                    copiedType === 'code' 
-                      ? 'bg-green-600 text-white shadow-md' 
-                      : 'bg-pink-600 text-white hover:bg-pink-700 hover:shadow-md'
-                  }`}
+                  className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
                 >
-                  {copiedType === 'code' ? <Check size={16} /> : <Copy size={16} />}
-                  {copiedType === 'code' ? 'Copied!' : 'Copy Code'}
-                </button>
-                <button
-                  onClick={copyAsFullEntry}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all shadow-sm ${
-                    copiedType === 'full' 
-                      ? 'bg-green-600 text-white shadow-md' 
-                      : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md'
-                  }`}
-                >
-                  {copiedType === 'full' ? <Check size={16} /> : <Copy size={16} />}
-                  {copiedType === 'full' ? 'Copied!' : 'Copy Full Entry'}
+                  <Copy size={16} />
+                  Copy Code
                 </button>
               </div>
-              
-              {/* Import Section */}
-              <div className="mb-4 p-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-dashed border-gray-300">
-                <label className="block text-sm font-semibold mb-2 text-gray-700">
-                  <Upload size={16} className="inline mr-1" />
-                  Import Layout (Paste JSON here)
-                </label>
-                <textarea
-                  value={importText}
-                  onChange={(e) => {
-                    setImportText(e.target.value);
-                    setImportError('');
-                  }}
-                  placeholder='Paste JSON layout here, e.g.: {"title": {"topMedium": "4%", ...}}'
-                  className="w-full p-2 border-2 border-gray-300 rounded text-xs font-mono h-24 mb-2 focus:border-blue-500 focus:outline-none bg-white"
-                />
-                <button
-                  onClick={() => {
-                    if (importText.trim()) {
-                      handleImport(importText);
-                    } else {
-                      setImportError('Please paste JSON data first');
-                    }
-                  }}
-                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 text-sm font-medium shadow-sm transition-all"
-                >
-                  Import Layout
-                </button>
-                {importError && (
-                  <div className="mt-2 text-xs text-red-700 bg-red-50 p-2 rounded border border-red-200">
-                    ⚠️ {importError}
-                  </div>
-                )}
-              </div>
-              
-              {/* Output Textarea */}
-              <div className="relative">
-                <label className="block text-sm font-semibold mb-2 text-gray-700">
-                  <Download size={16} className="inline mr-1" />
-                  Layout Output (Click to select all, then copy)
-                </label>
-                <textarea
-                  value={jsonOutput}
-                  readOnly
-                  onClick={(e) => e.target.select()}
-                  className="w-full p-4 border-2 border-gray-300 rounded-lg text-sm font-mono h-80 bg-white focus:border-purple-500 focus:outline-none shadow-inner"
-                  style={{ resize: 'vertical', minHeight: '320px' }}
-                />
-                <div className="absolute top-12 right-4 text-xs text-gray-400 bg-white/80 px-2 py-1 rounded">
-                  {jsonOutput.length} chars
-                </div>
-              </div>
-              
-              {/* Instructions */}
-              <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-xs text-blue-800 font-medium mb-1">💡 How to use:</p>
-                <ol className="text-xs text-blue-700 list-decimal list-inside space-y-1">
-                  <li>Adjust the layout controls above</li>
-                  <li>Click "Copy Code" or "Copy Full Entry" to get the format for cardLayouts.js</li>
-                  <li>Paste the output into your cardLayouts.js file</li>
-                  <li>Or use "Import Layout" to load existing JSON layouts</li>
-                </ol>
-              </div>
+              <textarea
+                value={jsonOutput}
+                readOnly
+                className="w-full p-2 border rounded text-xs font-mono h-40"
+              />
             </div>
           </div>
         </div>
