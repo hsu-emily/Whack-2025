@@ -130,13 +130,15 @@ export default function Dashboard({ user, onLogout }) {
           </h1>
         </header>
 
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="btn-new-habit"
-        >
-          <Plus size={20} />
-          <span>New Habit</span>
-        </button>
+        {!(showCreateModal || showReflection || zoomedHabit) && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="btn-new-habit"
+          >
+            <Plus size={20} />
+            <span>New Habit</span>
+          </button>
+        )}
 
         {uncompletedHabits.length === 0 ? (
             <div className="empty-state">

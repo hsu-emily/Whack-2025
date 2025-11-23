@@ -1,105 +1,226 @@
 // Card Layout Configurations
-// Each card has separate Medium and Large size values
+// Single layout values used for both carousel and zoom modal
 
-// Base layout configuration with medium/large values
+// Base layout configuration
 const baseLayout = {
   title: {
-    topMedium: '3%',
-    topLarge: '3%',
-    leftMedium: '7%',
-    leftLarge: '7%',
+    top: '3%',
+    left: '7%',
     textAlign: 'left',
-    colorMedium: '#333',
-    colorLarge: '#333',
-    fontSizeMedium: '1.4rem',
-    fontSizeLarge: '2rem',
-    fontFamilyMedium: 'Press Start 2P',
-    fontFamilyLarge: 'Press Start 2P',
+    color: '#333',
+    fontSize: '2rem',
+    fontFamily: 'Press Start 2P',
     fontWeight: 'bold',
-    widthMedium: '80%',
-    widthLarge: '80%'
+    width: '80%'
   },
   description: {
-    topMedium: '20%',
-    topLarge: '20%',
-    leftMedium: '7%',
-    leftLarge: '7%',
+    top: '20%',
+    left: '7%',
     textAlign: 'left',
-    colorMedium: '#555',
-    colorLarge: '#555',
-    fontSizeMedium: '1rem',
-    fontSizeLarge: '1.3rem',
-    fontFamilyMedium: 'Press Start 2P',
-    fontFamilyLarge: 'Press Start 2P',
-    widthMedium: '80%',
-    widthLarge: '80%'
+    color: '#555',
+    fontSize: '1.3rem',
+    fontFamily: 'Press Start 2P',
+    width: '80%'
   },
   punchGrid: {
-    topMedium: '33%',
-    topLarge: '34%',
-    leftMedium: '50%',
-    leftLarge: '50%',
+    top: '34%',
+    left: '50%',
     transform: 'translateX(-50%)',
-    punchCircleSizeMedium: '70px',
-    punchCircleSizeLarge: '80px',
-    punchIconSizeMedium: '70px',
-    punchIconSizeLarge: '80px',
-    punchHorizontalGapMedium: '7px',
-    punchHorizontalGapLarge: '13px',
-    punchVerticalGapMedium: '10px',
-    punchVerticalGapLarge: '15px',
+    punchCircleSize: '80px',
+    punchIconSize: '80px',
+    punchHorizontalGap: '13px',
+    punchVerticalGap: '15px',
     numRows: 2,
     punchesPerRow: 5
   }
 };
 
 // Default layout configurations for each punch card
-// Each card uses the base layout but can override colors
 export const cardLayouts = {
   'WindowsGreen.png': {
     ...baseLayout,
-    title: { ...baseLayout.title, colorMedium: '#0b693c', colorLarge: '#0b693c' },
-    description: { ...baseLayout.description, colorMedium: '#0b693c', colorLarge: '#0b693c' }
+    title: { ...baseLayout.title, color: '#0b693c' },
+    description: { ...baseLayout.description, color: '#0b693c' }
   },
   'WindowsPink.png': {
     ...baseLayout,
-    title: { ...baseLayout.title, colorMedium: '#f677a2', colorLarge: '#f677a2' },
-    description: { ...baseLayout.description, colorMedium: '#f677a2', colorLarge: '#f677a2' }
+    title: { ...baseLayout.title, color: '#f677a2' },
+    description: { ...baseLayout.description, color: '#f677a2' }
   },
   'WindowsPurple.png': {
     ...baseLayout,
-    title: { ...baseLayout.title, colorMedium: '#8c52ff', colorLarge: '#8c52ff' },
-    description: { ...baseLayout.description, colorMedium: '#8c52ff', colorLarge: '#8c52ff' }
+    title: { ...baseLayout.title, color: '#8c52ff' },
+    description: { ...baseLayout.description, color: '#8c52ff' }
   },
   'LacePink.png': {
     ...baseLayout,
-    title: { ...baseLayout.title, colorMedium: '#EC4899', colorLarge: '#EC4899' },
-    description: { ...baseLayout.description, colorMedium: '#F472B6', colorLarge: '#F472B6' }
+    title: {
+      top: '12%',
+      left: '0%',
+      textAlign: 'center',
+      color: '#f677a2',
+      fontSize: '3rem',
+      fontFamily: 'Moontime, Great Vibes, cursive',
+      fontWeight: 'normal',
+      width: '100%'
+    },
+    description: {
+      top: '28%',
+      left: '0%',
+      textAlign: 'center',
+      color: '#f677a2',
+      fontSize: '1rem',
+      fontFamily: 'Dancing Script',
+      width: '100%'
+    },
+    punchGrid: {
+      top: '42%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      punchCircleSize: '75px',
+      punchIconSize: '75px',
+      punchHorizontalGap: '4px',
+      punchVerticalGap: '0px',
+      numRows: 2,
+      punchesPerRow: 5
+    }
   },
   'LaceRed.png': {
     ...baseLayout,
-    title: { ...baseLayout.title, colorMedium: '#DC2626', colorLarge: '#DC2626' },
-    description: { ...baseLayout.description, colorMedium: '#EF4444', colorLarge: '#EF4444' }
+    title: { ...baseLayout.title, color: '#DC2626' },
+    description: { ...baseLayout.description, color: '#EF4444' }
   },
   'PlaidBlue.png': {
     ...baseLayout,
-    title: { ...baseLayout.title, colorMedium: '#2563EB', colorLarge: '#2563EB' },
-    description: { ...baseLayout.description, colorMedium: '#3B82F6', colorLarge: '#3B82F6' }
+    title: {
+      top: '15%',
+      left: '0%',
+      textAlign: 'center',
+      color: '#2563EB',
+      fontSize: '3rem',
+      fontFamily: 'Cinzel',
+      fontWeight: 'bold',
+      width: '100%'
+    },
+    description: {
+      top: '30%',
+      left: '0%',
+      textAlign: 'center',
+      color: '#3B82F6',
+      fontSize: '1.1rem',
+      fontFamily: 'Dancing Script',
+      width: '100%'
+    },
+    punchGrid: {
+      top: '42%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      punchCircleSize: '67px',
+      punchIconSize: '67px',
+      punchHorizontalGap: '7px',
+      punchVerticalGap: '0px',
+      numRows: 2,
+      punchesPerRow: 5
+    }
   },
   'PlaidGreen.png': {
     ...baseLayout,
-    title: { ...baseLayout.title, colorMedium: '#059669', colorLarge: '#059669' },
-    description: { ...baseLayout.description, colorMedium: '#10B981', colorLarge: '#10B981' }
+    title: {
+      top: '15%',
+      left: '0%',
+      textAlign: 'center',
+      color: '#0b693c',
+      fontSize: '3rem',
+      fontFamily: 'Cinzel',
+      fontWeight: 'bold',
+      width: '100%'
+    },
+    description: {
+      top: '30%',
+      left: '0%',
+      textAlign: 'center',
+      color: '#0b693c',
+      fontSize: '1.1rem',
+      fontFamily: 'Dancing Script',
+      width: '100%'
+    },
+    punchGrid: {
+      top: '42%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      punchCircleSize: '67px',
+      punchIconSize: '67px',
+      punchHorizontalGap: '7px',
+      punchVerticalGap: '0px',
+      numRows: 2,
+      punchesPerRow: 5
+    }
   },
   'DigiCam.png': {
     ...baseLayout,
-    title: { ...baseLayout.title, colorMedium: '#1F2937', colorLarge: '#1F2937' },
-    description: { ...baseLayout.description, colorMedium: '#4B5563', colorLarge: '#4B5563' }
+    title: {
+      top: '12%',
+      left: '-2%',
+      textAlign: 'center',
+      color: '#ffffff',
+      fontSize: '1.2rem',
+      fontFamily: 'Press Start 2P',
+      fontWeight: 'bold',
+      width: '80%'
+    },
+    description: {
+      top: '22%',
+      left: '9%',
+      textAlign: 'center',
+      color: '#ffffff',
+      fontSize: '.8rem',
+      fontFamily: 'Press Start 2P',
+      width: '60%'
+    },
+    punchGrid: {
+      top: '40%',
+      left: '38%',
+      transform: 'translateX(-50%)',
+      punchCircleSize: '70px',
+      punchIconSize: '70px',
+      punchHorizontalGap: '7px',
+      punchVerticalGap: '10px',
+      numRows: 2,
+      punchesPerRow: 5
+    }
   },
   'FilmCam.png': {
     ...baseLayout,
-    title: { ...baseLayout.title, colorMedium: '#92400E', colorLarge: '#92400E' },
-    description: { ...baseLayout.description, colorMedium: '#B45309', colorLarge: '#B45309' }
+    title: {
+      top: '9%',
+      left: '0%',
+      textAlign: 'center',
+      color: '#f3d279',
+      fontSize: '1.7rem',
+      fontFamily: 'Press Start 2P',
+      fontWeight: 'bold',
+      width: '100%'
+    },
+    description: {
+      top: '20%',
+      left: '15%',
+      textAlign: 'center',
+      color: '#ffffff',
+      fontSize: '0.9rem',
+      fontFamily: 'Press Start 2P',
+      width: '70%'
+    },
+    punchGrid: {
+      top: '39%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      punchCircleSize: '75px',
+      punchIconSize: '75px',
+      punchHorizontalGap: '0px',
+      punchVerticalGap: '5px',
+      numRows: 2,
+      punchesPerRow: 5
+    }
   }
 };
 
@@ -107,4 +228,3 @@ export const cardLayouts = {
 export const getCardLayout = (cardImageFilename) => {
   return cardLayouts[cardImageFilename] || cardLayouts['WindowsGreen.png'];
 };
-

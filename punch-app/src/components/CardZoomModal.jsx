@@ -35,39 +35,9 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
   const [justPunched, setJustPunched] = useState(false);
   const [clickEnabled, setClickEnabled] = useState(true);
 
-  // Helper function to reduce font size by 25%
-  const reduceFontSize = (fontSize) => {
-    if (!fontSize) return undefined;
-    const match = fontSize.toString().match(/^([\d.]+)(.*)$/);
-    if (match) {
-      const value = parseFloat(match[1]);
-      const unit = match[2] || 'rem';
-      return `${(value * 0.75).toFixed(2)}${unit}`;
-    }
-    return fontSize;
-  };
-
   // Get punch card image and layout
   const punchCardImage = punchCardMap[habit.punchCardImage] || Object.values(punchCardMap)[0] || null;
-  // Always use cardLayouts to ensure we have Medium/Large structure
   const layout = getCardLayout(habit.punchCardImage);
-  
-  // Reduce font sizes for better visibility (25% smaller)
-  const reducedLayout = {
-    ...layout,
-    title: {
-      ...layout.title,
-      fontSizeLarge: reduceFontSize(layout.title.fontSizeLarge) || reduceFontSize(layout.title.fontSize) || '1.05rem',
-      fontSize: reduceFontSize(layout.title.fontSize) || '1.05rem',
-      fontSizeMedium: reduceFontSize(layout.title.fontSizeMedium) || reduceFontSize(layout.title.fontSize) || '1.05rem',
-    },
-    description: {
-      ...layout.description,
-      fontSizeLarge: reduceFontSize(layout.description.fontSizeLarge) || reduceFontSize(layout.description.fontSize) || '0.75rem',
-      fontSize: reduceFontSize(layout.description.fontSize) || '0.75rem',
-      fontSizeMedium: reduceFontSize(layout.description.fontSizeMedium) || reduceFontSize(layout.description.fontSize) || '0.75rem',
-    },
-  };
 
   // Get icons
   const icon1 = habit.icon1 ? (iconMap[habit.icon1] || habit.icon1) : null;
@@ -299,8 +269,8 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
                 icon2={icon2}
                 cardImage={punchCardImage}
                 isDailyPunch={habit.timeWindow === 'daily'}
-                titlePlacement={reducedLayout.title}
-                descriptionPlacement={reducedLayout.description}
+                titlePlacement={layout.title}
+                descriptionPlacement={layout.description}
                 punchGridPlacement={punchGridLayout}
                 currentPunches={habit.currentPunches}
                 size="large"

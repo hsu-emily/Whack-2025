@@ -12,34 +12,9 @@ export default function PunchCardPreview({
   punchGridPlacement = {},
   currentPunches = 0,
   targetPunches = 10,
-  size = 'medium', // 'medium' or 'large'
+  size = 'medium', // 'medium' or 'large' - kept for compatibility but not used
 }) {
-  // Get layout values based on size - use medium or large specific values
-  const getSizeValue = (mediumValue, largeValue) => {
-    return size === 'large' ? largeValue : mediumValue;
-  };
-
-  // Extract size-specific values from placement objects
-  const getTitleValue = (key) => {
-    if (titlePlacement[`${key}Medium`] !== undefined || titlePlacement[`${key}Large`] !== undefined) {
-      return getSizeValue(titlePlacement[`${key}Medium`], titlePlacement[`${key}Large`]) ?? titlePlacement[key];
-    }
-    return titlePlacement[key];
-  };
-
-  const getDescValue = (key) => {
-    if (descriptionPlacement[`${key}Medium`] !== undefined || descriptionPlacement[`${key}Large`] !== undefined) {
-      return getSizeValue(descriptionPlacement[`${key}Medium`], descriptionPlacement[`${key}Large`]) ?? descriptionPlacement[key];
-    }
-    return descriptionPlacement[key];
-  };
-
-  const getGridValue = (key) => {
-    if (punchGridPlacement[`${key}Medium`] !== undefined || punchGridPlacement[`${key}Large`] !== undefined) {
-      return getSizeValue(punchGridPlacement[`${key}Medium`], punchGridPlacement[`${key}Large`]) ?? punchGridPlacement[key];
-    }
-    return punchGridPlacement[key];
-  };
+  // Use values directly from placement objects (no Medium/Large distinction)
 
   const getPunchIcon = (index) => {
     const icon = (index % 2 === 0 ? icon1 : icon2);
@@ -49,13 +24,13 @@ export default function PunchCardPreview({
 
   // Use values from punchGridPlacement, with fallbacks for defaults
   const currentPunchGrid = {
-    top: getGridValue('top') || '40%',
-    left: getGridValue('left') || '50%',
-    transform: getGridValue('transform') || 'translateX(-50%)',
-    punchCircleSize: getGridValue('punchCircleSize') || '48px',
-    punchIconSize: getGridValue('punchIconSize') || '32px',
-    punchHorizontalGap: getGridValue('punchHorizontalGap') || '24px',
-    punchVerticalGap: getGridValue('punchVerticalGap') || '24px',
+    top: punchGridPlacement.top || '40%',
+    left: punchGridPlacement.left || '50%',
+    transform: punchGridPlacement.transform || 'translateX(-50%)',
+    punchCircleSize: punchGridPlacement.punchCircleSize || '48px',
+    punchIconSize: punchGridPlacement.punchIconSize || '32px',
+    punchHorizontalGap: punchGridPlacement.punchHorizontalGap || '24px',
+    punchVerticalGap: punchGridPlacement.punchVerticalGap || '24px',
     numRows: punchGridPlacement.numRows || 2,
     punchesPerRow: punchGridPlacement.punchesPerRow || 4,
   };
@@ -80,26 +55,26 @@ export default function PunchCardPreview({
         })
     );
 
-  // Create title and description styles with size-specific values
+  // Create title and description styles using direct values
   const titleStyle = {
-    top: getTitleValue('top') || titlePlacement.top,
-    left: getTitleValue('left') || titlePlacement.left,
-    textAlign: getTitleValue('textAlign') || titlePlacement.textAlign,
-    color: getTitleValue('color') || titlePlacement.color,
-    fontSize: getTitleValue('fontSize') || titlePlacement.fontSize,
-    fontFamily: getTitleValue('fontFamily') || titlePlacement.fontFamily || 'Arial',
-    fontWeight: getTitleValue('fontWeight') || titlePlacement.fontWeight,
-    width: getTitleValue('width') || titlePlacement.width,
+    top: titlePlacement.top,
+    left: titlePlacement.left,
+    textAlign: titlePlacement.textAlign,
+    color: titlePlacement.color,
+    fontSize: titlePlacement.fontSize,
+    fontFamily: titlePlacement.fontFamily || 'Arial',
+    fontWeight: titlePlacement.fontWeight,
+    width: titlePlacement.width,
   };
 
   const descStyle = {
-    top: getDescValue('top') || descriptionPlacement.top,
-    left: getDescValue('left') || descriptionPlacement.left,
-    textAlign: getDescValue('textAlign') || descriptionPlacement.textAlign,
-    color: getDescValue('color') || descriptionPlacement.color,
-    fontSize: getDescValue('fontSize') || descriptionPlacement.fontSize,
-    fontFamily: getDescValue('fontFamily') || descriptionPlacement.fontFamily || 'Arial',
-    width: getDescValue('width') || descriptionPlacement.width,
+    top: descriptionPlacement.top,
+    left: descriptionPlacement.left,
+    textAlign: descriptionPlacement.textAlign,
+    color: descriptionPlacement.color,
+    fontSize: descriptionPlacement.fontSize,
+    fontFamily: descriptionPlacement.fontFamily || 'Arial',
+    width: descriptionPlacement.width,
   };
 
   return (
