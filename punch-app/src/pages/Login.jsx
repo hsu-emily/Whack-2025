@@ -14,7 +14,7 @@ export default function Login() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/dashboard'); // Redirect to a dashboard or home page after signup
+      navigate('/dashboard');
     } catch (error) {
       alert(error.message);
     }
@@ -23,7 +23,7 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate('/dashboard'); // Redirect to a dashboard or home page after signup
+      navigate('/dashboard');
     } catch (error) {
       alert(error.message);
     }
@@ -31,10 +31,10 @@ export default function Login() {
 
   return (
     <Layout>
-      <NavBar></NavBar>
-      <form onSubmit={handleLogin} className="form-container">
-        <div className="form-group">
-          <h2 className="page-heading">Log In</h2>
+      <NavBar />
+      <div className="form-container">
+        <h2 className="page-heading no-wrap">Log In</h2>
+        <form onSubmit={handleLogin} className="form-group">
           <input
             type="email"
             className="form-input"
@@ -60,11 +60,12 @@ export default function Login() {
             Continue with Google
           </button>
           <div className="form-link">
-            Don't have an account?{' '}
+            Don't have an account?
+            <br />
             <Link to="/signup">Create one here.</Link>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </Layout>
   );
 }

@@ -240,7 +240,8 @@ a:hover {
    ============================================ */
 .form-container {
   padding: 2rem;
-  max-width: 28rem;
+  max-width: 75vw;
+  width: 100%;
   margin: 0 auto;
   margin-top: 2rem;
   display: flex;
@@ -253,6 +254,7 @@ a:hover {
     padding: 2.5rem;
     margin-top: 3rem;
     gap: 2rem;
+    max-width: 36rem;
   }
 }
 
@@ -278,7 +280,7 @@ a:hover {
 
 .form-input {
   width: 100%;
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.5rem;
   border: 2px solid var(--color-gray-300);
   border-radius: var(--radius-xl);
   font-size: 1rem;
@@ -286,11 +288,13 @@ a:hover {
   transition: all var(--transition-base);
   background: white;
   text-align: left;
+  min-height: 3.5rem;
 }
 
 @media (min-width: 640px) {
   .form-input {
-    padding: 1.25rem 1.25rem;
+    padding: 1.5rem 1.75rem;
+    min-height: 4rem;
   }
 }
 
@@ -393,6 +397,8 @@ textarea {
   font-size: 0.875rem;
   color: var(--color-gray-500);
   margin-top: 2rem;
+  max-width: 100%;
+  line-height: 1.6;
 }
 
 @media (min-width: 640px) {
@@ -1467,6 +1473,14 @@ textarea {
   color: var(--color-pink-600);
   margin-bottom: 2rem;
   text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Only apply nowrap on login/signup pages - use a specific class */
+.page-heading.no-wrap {
+  white-space: nowrap;
 }
 
 @media (min-width: 640px) {
@@ -1486,6 +1500,13 @@ textarea {
 @media (min-width: 1280px) {
   .page-heading {
     font-size: 3.75rem;
+  }
+}
+
+/* Optional: Adjust for very small screens */
+@media (max-width: 480px) {
+  .page-heading {
+    font-size: 1.5rem; /* Slightly smaller on very small screens */
   }
 }
 
