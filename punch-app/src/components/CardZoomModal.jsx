@@ -1,9 +1,10 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Home, LayoutDashboard, Settings, Undo2 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Home, LayoutDashboard, Settings, Undo2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import holePunchCursor from '../assets/cursors/holePunch.png';
 import holePunchClickCursor from '../assets/cursors/holePunchClick.png';
+import { getCardLayout } from '../utils/cardLayouts';
 import PunchCardPreview from './PunchCardPreview';
 
 // Load punch card PNGs
@@ -31,12 +32,38 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
   const [showSettings, setShowSettings] = useState(false);
   const [justPunched, setJustPunched] = useState(false);
 
+  // Helper function to reduce font size by 25%
+  const reduceFontSize = (fontSize) => {
+    if (!fontSize) return undefined;
+    const match = fontSize.toString().match(/^([\d.]+)(.*)$/);
+    if (match) {
+      const value = parseFloat(match[1]);
+      const unit = match[2] || 'rem';
+      return `${(value * 0.75).toFixed(2)}${unit}`;
+    }
+    return fontSize;
+  };
+
   // Get punch card image and layout
   const punchCardImage = punchCardMap[habit.punchCardImage] || Object.values(punchCardMap)[0] || null;
-  const layout = habit.layout || {
-    title: { top: '10%', left: '0%', textAlign: 'center', color: '#333', fontSize: '2rem', fontWeight: 'bold', width: '100%' },
-    description: { top: '25%', left: '0%', textAlign: 'center', color: '#555', fontSize: '1rem', width: '80%' },
-    punchGrid: { top: '45%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '80px', punchIconSize: '60px', punchHorizontalGap: '40px', punchVerticalGap: '50px', numRows: 2, punchesPerRow: 5 }
+  // Always use cardLayouts to ensure we have Medium/Large structure
+  const layout = getCardLayout(habit.punchCardImage);
+  
+  // Reduce font sizes for better visibility (25% smaller)
+  const reducedLayout = {
+    ...layout,
+    title: {
+      ...layout.title,
+      fontSizeLarge: reduceFontSize(layout.title.fontSizeLarge) || reduceFontSize(layout.title.fontSize) || '1.05rem',
+      fontSize: reduceFontSize(layout.title.fontSize) || '1.05rem',
+      fontSizeMedium: reduceFontSize(layout.title.fontSizeMedium) || reduceFontSize(layout.title.fontSize) || '1.05rem',
+    },
+    description: {
+      ...layout.description,
+      fontSizeLarge: reduceFontSize(layout.description.fontSizeLarge) || reduceFontSize(layout.description.fontSize) || '0.75rem',
+      fontSize: reduceFontSize(layout.description.fontSize) || '0.75rem',
+      fontSizeMedium: reduceFontSize(layout.description.fontSizeMedium) || reduceFontSize(layout.description.fontSize) || '0.75rem',
+    },
   };
 
   // Get icons
@@ -48,6 +75,7 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
     filledPunches: habit.currentPunches,
     totalPunches: habit.targetPunches
   };
+
 
   useEffect(() => {
     // Hide default cursor on body
@@ -245,10 +273,11 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
                 icon2={icon2}
                 cardImage={punchCardImage}
                 isDailyPunch={habit.timeWindow === 'daily'}
-                titlePlacement={layout.title}
-                descriptionPlacement={layout.description}
+                titlePlacement={reducedLayout.title}
+                descriptionPlacement={reducedLayout.description}
                 punchGridPlacement={punchGridLayout}
                 currentPunches={habit.currentPunches}
+                size="large"
                 targetPunches={habit.targetPunches}
               />
             ) : (

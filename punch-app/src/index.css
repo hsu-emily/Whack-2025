@@ -1866,6 +1866,25 @@ textarea {
   box-shadow: var(--shadow-xl);
 }
 
+/* Size Preview Display */
+.card-zoom-size-preview {
+  position: absolute;
+  bottom: -3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 2px solid var(--color-pink-200);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-pink-600);
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+}
+
 /* Navigation Buttons - Top Left */
 .card-zoom-nav-buttons {
   position: absolute;
@@ -1970,10 +1989,10 @@ textarea {
 
 .card-zoom-card {
   width: 100%;
-  max-width: 600px;
+  max-width: 600px; /* Default, can be overridden by inline style */
   aspect-ratio: 1004/591;
   position: relative;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, max-width 0.3s ease;
   /* Ensure card fits within viewport with padding */
   max-height: calc(100vh - 4rem);
 }
@@ -1981,7 +2000,7 @@ textarea {
 /* Constrain width based on height if needed */
 @media (max-height: 700px) {
   .card-zoom-card {
-    max-width: min(600px, calc((100vh - 4rem) * 1004 / 591));
+    max-width: min(600px, calc((100vh - 4rem) * 1004 / 591)) !important;
   }
 }
 
@@ -1994,14 +2013,15 @@ textarea {
   transition: transform 0.05s ease-out;
 }
 
+/* Media queries only apply if no inline style is set */
 @media (min-width: 640px) {
-  .card-zoom-card {
+  .card-zoom-card:not([style*="max-width"]) {
     max-width: 700px;
   }
 }
 
 @media (min-width: 1024px) {
-  .card-zoom-card {
+  .card-zoom-card:not([style*="max-width"]) {
     max-width: 800px;
   }
 }

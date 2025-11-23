@@ -37,53 +37,19 @@ const iconOptions = Object.keys(iconMap).map(filename => ({
   filename: filename
 }));
 
+import { getCardLayout } from '../utils/cardLayouts';
+
 // Default layout configurations for each punch card
 const defaultLayouts = {
-  'WindowsGreen.png': {
-    title: { top: '4%', left: '0%', textAlign: 'center', color: '#0b693c', fontSize: '2rem', fontWeight: 'bold', font: 'Press Start 2P', width: '70%' },
-    description: { top: '23%', left: '0%', textAlign: 'center', color: '#0b693c', fontSize: '1rem', width: '70%' },
-    punchGrid: { top: '45%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '100px', punchIconSize: '100px', punchHorizontalGap: '50px', punchVerticalGap: '70px', numRows: 2, punchesPerRow: 5 }
-  },
-  'WindowsPink.png': {
-    title: { top: '15%', left: '10%', textAlign: 'left', color: '#333', fontSize: '2.8rem', fontWeight: 'bold', width: '80%' },
-    description: { top: '35%', left: '10%', textAlign: 'left', color: '#555', fontSize: '1.1rem', width: '75%' },
-    punchGrid: { top: '50%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '80px', punchIconSize: '60px', punchHorizontalGap: '40px', punchVerticalGap: '50px', numRows: 2, punchesPerRow: 5 }
-  },
-  'WindowsPurple.png': {
-    title: { top: '10%', left: '0%', textAlign: 'center', color: '#6B46C1', fontSize: '2.5rem', fontWeight: 'bold', width: '100%' },
-    description: { top: '25%', left: '0%', textAlign: 'center', color: '#7C3AED', fontSize: '1.2rem', width: '80%' },
-    punchGrid: { top: '45%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '90px', punchIconSize: '70px', punchHorizontalGap: '45px', punchVerticalGap: '60px', numRows: 2, punchesPerRow: 5 }
-  },
-  'LacePink.png': {
-    title: { top: '8%', left: '0%', textAlign: 'center', color: '#EC4899', fontSize: '2.2rem', fontWeight: 'bold', width: '100%' },
-    description: { top: '22%', left: '0%', textAlign: 'center', color: '#F472B6', fontSize: '1rem', width: '80%' },
-    punchGrid: { top: '45%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '85px', punchIconSize: '65px', punchHorizontalGap: '40px', punchVerticalGap: '55px', numRows: 2, punchesPerRow: 5 }
-  },
-  'LaceRed.png': {
-    title: { top: '8%', left: '0%', textAlign: 'center', color: '#DC2626', fontSize: '2.2rem', fontWeight: 'bold', width: '100%' },
-    description: { top: '22%', left: '0%', textAlign: 'center', color: '#EF4444', fontSize: '1rem', width: '80%' },
-    punchGrid: { top: '45%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '85px', punchIconSize: '65px', punchHorizontalGap: '40px', punchVerticalGap: '55px', numRows: 2, punchesPerRow: 5 }
-  },
-  'PlaidBlue.png': {
-    title: { top: '10%', left: '0%', textAlign: 'center', color: '#2563EB', fontSize: '2.3rem', fontWeight: 'bold', width: '100%' },
-    description: { top: '24%', left: '0%', textAlign: 'center', color: '#3B82F6', fontSize: '1.1rem', width: '80%' },
-    punchGrid: { top: '45%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '88px', punchIconSize: '68px', punchHorizontalGap: '42px', punchVerticalGap: '58px', numRows: 2, punchesPerRow: 5 }
-  },
-  'PlaidGreen.png': {
-    title: { top: '10%', left: '0%', textAlign: 'center', color: '#059669', fontSize: '2.3rem', fontWeight: 'bold', width: '100%' },
-    description: { top: '24%', left: '0%', textAlign: 'center', color: '#10B981', fontSize: '1.1rem', width: '80%' },
-    punchGrid: { top: '45%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '88px', punchIconSize: '68px', punchHorizontalGap: '42px', punchVerticalGap: '58px', numRows: 2, punchesPerRow: 5 }
-  },
-  'DigiCam.png': {
-    title: { top: '12%', left: '0%', textAlign: 'center', color: '#1F2937', fontSize: '2rem', fontWeight: 'bold', width: '100%' },
-    description: { top: '26%', left: '0%', textAlign: 'center', color: '#4B5563', fontSize: '1rem', width: '80%' },
-    punchGrid: { top: '48%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '82px', punchIconSize: '62px', punchHorizontalGap: '38px', punchVerticalGap: '52px', numRows: 2, punchesPerRow: 5 }
-  },
-  'FilmCam.png': {
-    title: { top: '12%', left: '0%', textAlign: 'center', color: '#92400E', fontSize: '2rem', fontWeight: 'bold', width: '100%' },
-    description: { top: '26%', left: '0%', textAlign: 'center', color: '#B45309', fontSize: '1rem', width: '80%' },
-    punchGrid: { top: '48%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '82px', punchIconSize: '62px', punchHorizontalGap: '38px', punchVerticalGap: '52px', numRows: 2, punchesPerRow: 5 }
-  }
+  'WindowsGreen.png': getCardLayout('WindowsGreen.png'),
+  'WindowsPink.png': getCardLayout('WindowsPink.png'),
+  'WindowsPurple.png': getCardLayout('WindowsPurple.png'),
+  'LacePink.png': getCardLayout('LacePink.png'),
+  'LaceRed.png': getCardLayout('LaceRed.png'),
+  'PlaidBlue.png': getCardLayout('PlaidBlue.png'),
+  'PlaidGreen.png': getCardLayout('PlaidGreen.png'),
+  'DigiCam.png': getCardLayout('DigiCam.png'),
+  'FilmCam.png': getCardLayout('FilmCam.png')
 };
 
 export default function CreateHabitModal({ userId, onClose }) {
@@ -461,6 +427,7 @@ export default function CreateHabitModal({ userId, onClose }) {
                       titlePlacement={selectedCardLayout.title}
                       descriptionPlacement={selectedCardLayout.description}
                       punchGridPlacement={selectedCardLayout.punchGrid}
+                      size="medium"
                     />
                   </div>
             </div>

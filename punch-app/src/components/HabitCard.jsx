@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Download, RotateCcw, Share2, Trash2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { useHabitStore } from '../store/habitStore';
+import { getCardLayout } from '../utils/cardLayouts';
 import { downloadCard, generateShareableCard, shareCard } from '../utils/shareCard';
 import PunchCardPreview from './PunchCardPreview';
 
@@ -21,7 +22,7 @@ for (const path in iconModules) {
   iconMap[filename] = iconModules[path].default;
 }
 
-export default function HabitCard({ habit, onPunch, hideControls = false }) {
+export default function HabitCard({ habit, onPunch, hideControls = false, size = 'medium' }) {
   const { resetHabit, deleteHabit } = useHabitStore();
   const cardRef = useRef(null);
   const [sharing, setSharing] = useState(false);
@@ -37,11 +38,10 @@ export default function HabitCard({ habit, onPunch, hideControls = false }) {
     return Object.values(punchCardMap)[0] || null;
   }, [habit.punchCardImage]);
 
-  const layout = habit.layout || {
-    title: { top: '10%', left: '0%', textAlign: 'center', color: '#333', fontSize: '2rem', fontWeight: 'bold', width: '100%' },
-    description: { top: '25%', left: '0%', textAlign: 'center', color: '#555', fontSize: '1rem', width: '80%' },
-    punchGrid: { top: '45%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '80px', punchIconSize: '60px', punchHorizontalGap: '40px', punchVerticalGap: '50px', numRows: 2, punchesPerRow: 5 }
-  };
+  // Get layout from cardLayouts based on punchCardImage
+  // Always use cardLayouts to ensure we have Medium/Large structure
+  // If habit.layout exists and has custom values, we could merge them, but for now use cardLayouts
+  const layout = getCardLayout(habit.punchCardImage);
 
   // Get icons
   const icon1 = habit.icon1 ? (iconMap[habit.icon1] || habit.icon1) : null;
@@ -131,6 +131,7 @@ export default function HabitCard({ habit, onPunch, hideControls = false }) {
             punchGridPlacement={punchGridLayout}
             currentPunches={habit.currentPunches}
             targetPunches={habit.targetPunches}
+            size={size}
           />
         ) : (
           <div className="habit-card-fallback">

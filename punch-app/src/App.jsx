@@ -1,16 +1,17 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { useEffect, useState } from 'react';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { auth } from './firebase';
 import { useHabitStore } from './store/habitStore';
 
+import CustomCursor from './components/CustomCursor';
+import About from './pages/About';
+import CardLayoutEditor from './pages/CardLayoutEditor';
+import CreatePunchPass from './pages/CreatePunchPass';
+import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import About from './pages/About';
 import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard';
-import CreatePunchPass from './pages/CreatePunchPass';
-import CustomCursor from './components/CustomCursor';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -75,6 +76,10 @@ function App() {
         <Route 
           path="/create-punch-pass" 
           element={user ? <CreatePunchPass /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/card-layout-editor" 
+          element={<CardLayoutEditor />} 
         />
       </Routes>
     </Router>

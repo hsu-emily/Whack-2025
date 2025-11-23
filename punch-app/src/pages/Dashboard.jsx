@@ -82,9 +82,7 @@ export default function Dashboard({ user, onLogout }) {
               <span className="dashboard-title">
                 Punchie
               </span>
-              <span className="dashboard-welcome">
-                Welcome, {user?.displayName?.split(' ')[0] || 'Friend'}! 
-              </span>
+              
             </div>
 
             <div className="dashboard-header-right">
@@ -105,6 +103,13 @@ export default function Dashboard({ user, onLogout }) {
             </div>
           </div>
         </header>
+        
+        <div className="habits-header">
+          <span className="dashboard-welcome">
+            Welcome, {user?.displayName?.split(' ')[0] || 'Friend'}! 
+          </span>
+        </div>
+
 
         {/* Stats Overview */}
         <div className="stats-container">
@@ -115,36 +120,29 @@ export default function Dashboard({ user, onLogout }) {
             <div className="stats-grid">
               <div className="stat-card stat-card-pink">
                 <div className="stat-number stat-number-pink">{todayHabits}</div>
-                <div className="stat-label">Habits to punch today 🎯</div>
+                <div className="stat-label">Habits to punch today</div>
               </div>
               <div className="stat-card stat-card-purple">
                 <div className="stat-number stat-number-purple">{totalPunches}</div>
-                <div className="stat-label">Total punches 💪</div>
+                <div className="stat-label">Total punches</div>
               </div>
               <div className="stat-card stat-card-green">
                 <div className="stat-number stat-number-green">{completedHabits}</div>
-                <div className="stat-label">Rewards unlocked 🎉</div>
+                <div className="stat-label">Rewards unlocked</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Habits Carousel */}
-        <div className="habits-section">
-          <div className="habits-header">
-            <h2 className="habits-title">
-              Your Punch Cards 📇
-            </h2>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="btn-new-habit"
-            >
-              <Plus size={20} />
-              <span>New Habit</span>
-            </button>
-          </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="btn-new-habit"
+        >
+          <Plus size={20} />
+          <span>New Habit</span>
+        </button>
 
-          {habits.length === 0 ? (
+        {habits.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-emoji">🐰</div>
               <h3 className="empty-state-title">No habits right now</h3>
@@ -202,6 +200,7 @@ export default function Dashboard({ user, onLogout }) {
                           habit={habit}
                           onPunch={() => handlePunch(habit.id)}
                           hideControls={true}
+                          size="medium"
                         />
                       </motion.div>
                     );
@@ -234,7 +233,6 @@ export default function Dashboard({ user, onLogout }) {
               )}
             </div>
           )}
-        </div>
       </div>
 
       {/* Modals */}

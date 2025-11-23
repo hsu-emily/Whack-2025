@@ -3,6 +3,7 @@ import GreenWindows from "../assets/punch_cards/WindowsGreen.png";
 import PinkWindows from "../assets/punch_cards/WindowsPink.png";
 import Layout from "../components/Layout";
 import PunchCardPreview from "../components/PunchCardPreview";
+import { getCardLayout } from "../utils/cardLayouts";
 
 // Load both PNG and SVG icons
 const iconModulesPNG = import.meta.glob("../assets/icons/*.png", { eager: true });
@@ -17,57 +18,69 @@ for (const path in iconModulesSVG) {
   iconMap[filename] = iconModulesSVG[path].default;
 }
 
+// Base layout configuration with medium/large values
+const baseLayout = {
+  title: {
+    topMedium: '3%',
+    topLarge: '3%',
+    leftMedium: '7%',
+    leftLarge: '7%',
+    textAlign: 'left',
+    colorMedium: '#333',
+    colorLarge: '#333',
+    fontSizeMedium: '1.4rem',
+    fontSizeLarge: '2rem',
+    fontFamilyMedium: 'Press Start 2P',
+    fontFamilyLarge: 'Press Start 2P',
+    fontWeight: 'bold',
+    widthMedium: '80%',
+    widthLarge: '80%'
+  },
+  description: {
+    topMedium: '20%',
+    topLarge: '20%',
+    leftMedium: '7%',
+    leftLarge: '7%',
+    textAlign: 'left',
+    colorMedium: '#555',
+    colorLarge: '#555',
+    fontSizeMedium: '1rem',
+    fontSizeLarge: '1.3rem',
+    fontFamilyMedium: 'Press Start 2P',
+    fontFamilyLarge: 'Press Start 2P',
+    widthMedium: '80%',
+    widthLarge: '80%'
+  },
+  punchGrid: {
+    topMedium: '33%',
+    topLarge: '34%',
+    leftMedium: '50%',
+    leftLarge: '50%',
+    transform: 'translateX(-50%)',
+    punchCircleSizeMedium: '70px',
+    punchCircleSizeLarge: '80px',
+    punchIconSizeMedium: '70px',
+    punchIconSizeLarge: '80px',
+    punchHorizontalGapMedium: '7px',
+    punchHorizontalGapLarge: '13px',
+    punchVerticalGapMedium: '10px',
+    punchVerticalGapLarge: '15px',
+    numRows: 2,
+    punchesPerRow: 5
+  }
+};
+
 // --- Re-introducing Background Layouts ---
 const backgroundLayouts = {
   "WindowsGreen.png": {
-    title: {
-      top: "4%", // Adjust these percentages/pixels based on your WindowsGreen.png design
-      left: "0%",
-      textAlign: "center",
-      color: "#0b693c", // Example text color for this background
-      fontSize: "2rem", // Example font size
-      fontWeight: "bold",
-      font: "Press Start 2P",
-      width: "70%", // Limit width to prevent overflow
-    },
-    description: {
-      top: "23%", // Adjust for description placement
-      left: "0%",
-      textAlign: "center",
-      color: "#0b693c", // Example text color
-      fontSize: "1rem",
-      font: "CityLight Dots",
-      width: "70%",
-    },
-    punchGrid: {
-      top: "45%", // Adjust vertical position of the entire grid
-      punchCircleSize: "100px", // Larger punch circles
-      punchIconSize: "100px", // Larger icons inside the punches
-      punchHorizontalGap: "50px", // More space between punches horizontally
-      punchVerticalGap: "70px", // More space between punch rows vertically
-      numRows: 2, // You can make these dynamic too if backgrounds dictate
-      punchesPerRow: 5,
-    },
+    ...baseLayout,
+    title: { ...baseLayout.title, colorMedium: '#0b693c', colorLarge: '#0b693c' },
+    description: { ...baseLayout.description, colorMedium: '#0b693c', colorLarge: '#0b693c' }
   },
   "WindowsPink.png": {
-    title: {
-      top: "15%", // Adjust these for WindowsPink.png
-      left: "10%",
-      textAlign: "left",
-      color: "#333",
-      fontSize: "2.8rem",
-      fontWeight: "bold",
-      width: "80%",
-    },
-    description: {
-      top: "35%",
-      left: "10%",
-      textAlign: "left",
-      color: "#555",
-      fontSize: "1.1rem",
-      width: "75%",
-    },
-    // You could add punchGrid: { top: '50%', ... } here too if needed
+    ...baseLayout,
+    title: { ...baseLayout.title, colorMedium: '#f677a2', colorLarge: '#f677a2' },
+    description: { ...baseLayout.description, colorMedium: '#f677a2', colorLarge: '#f677a2' }
   },
 };
 
@@ -119,7 +132,8 @@ const CreatePunchPass = () => {
   };
 
   // Get the current layout configuration based on selected background
-  const currentLayout = backgroundLayouts[selectedBackground] || {}; // Fallback to empty object
+  // Use cardLayouts if available, otherwise fallback to backgroundLayouts
+  const currentLayout = getCardLayout(selectedBackground) || backgroundLayouts[selectedBackground] || {};
 
   return (
     <Layout>
@@ -143,6 +157,10 @@ const CreatePunchPass = () => {
               isDailyPunch={isDailyPunch}
               titlePlacement={currentLayout.title}
               descriptionPlacement={currentLayout.description}
+              punchGridPlacement={currentLayout.punchGrid}
+              currentPunches={0}
+              targetPunches={10}
+              size="medium"
             />
           </div>
         </div>
