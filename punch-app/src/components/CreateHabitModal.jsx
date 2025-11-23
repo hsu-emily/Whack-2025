@@ -212,7 +212,7 @@ export default function CreateHabitModal({ userId, onClose }) {
                     <Sparkles className="text-purple-600" size={24} />
                     <h3 className="font-semibold text-purple-900 text-lg">AI Habit Generator</h3>
                   </div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 text-center">
+                  <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
                     What goal do you want to achieve?
                   </label>
                   <textarea
@@ -266,7 +266,7 @@ export default function CreateHabitModal({ userId, onClose }) {
                 <div className="space-y-5 w-full max-w-xl mx-auto flex flex-col items-center">
                   {/* Title */}
                   <div className="w-full">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2 text-center">
+                    <label className="block text-sm font-semibold text-gray-700 mb-4 text-center">
                       Habit Title *
                     </label>
                     <input
@@ -281,7 +281,7 @@ export default function CreateHabitModal({ userId, onClose }) {
 
                   {/* Description */}
                   <div className="w-full">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2 text-center">
+                    <label className="block text-sm font-semibold text-gray-700 mb-4 text-center">
                       Description (optional)
                     </label>
                     <input
@@ -295,7 +295,7 @@ export default function CreateHabitModal({ userId, onClose }) {
 
                   {/* Time Window */}
                   <div className="w-full flex flex-col items-center">
-                    <label className="block text-sm font-semibold text-gray-700 mb-3 text-center">
+                    <label className="block text-sm font-semibold text-gray-700 mb-4 text-center">
                       How often? *
                     </label>
                     <div className="grid grid-cols-3 gap-3 w-full max-w-lg">
@@ -318,7 +318,7 @@ export default function CreateHabitModal({ userId, onClose }) {
 
                   {/* Reward */}
                   <div className="w-full">
-                    <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
+                    <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
                       <label className="block text-sm font-semibold text-gray-700 text-center">
                         Reward when complete
                       </label>
@@ -359,7 +359,7 @@ export default function CreateHabitModal({ userId, onClose }) {
 
                   {/* Icon Selection */}
                   <div className="w-full">
-                    <label className="block text-sm font-semibold text-gray-700 mb-3 text-center">Choose Icons</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-4 text-center">Choose Icons</label>
                     <div className="grid grid-cols-2 gap-4 w-full">
                       <div className="w-full">
                         <p className="text-xs font-medium text-gray-600 mb-2 text-center">Icon 1</p>
@@ -413,7 +413,7 @@ export default function CreateHabitModal({ userId, onClose }) {
             
             {/* Right Column: Punch Card Selection & Preview */}
             {mode === 'habit' && (
-              <div className="space-y-6 w-full max-w-xl mx-auto flex flex-col items-center">
+              <div className="space-y-6 min-w-0 flex flex-col items-center w-full">
                 {/* Punch Card Carousel */}
                 <div className="w-full">
                   <label className="block text-sm font-semibold text-gray-700 mb-3 text-center lg:text-left">Choose Punch Card Design</label>
