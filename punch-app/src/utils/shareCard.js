@@ -66,10 +66,11 @@ export async function generateShareableCard(cardElement, habit) {
       windowWidth: width,
       windowHeight: height,
       fontEmbedCSS: true, // Embed fonts in the canvas
-      onclone: (clonedDoc) => {
+      onclone: (clonedDoc, element) => {
         console.log('html2canvas onclone called');
         // Ensure cloned element is visible and has correct size
         const clonedElement = clonedDoc.querySelector('.punch-card-preview-container') || 
+                             element || 
                              clonedDoc.body.firstElementChild;
         if (clonedElement) {
           clonedElement.style.visibility = 'visible';
@@ -78,12 +79,45 @@ export async function generateShareableCard(cardElement, habit) {
           clonedElement.style.height = height + 'px';
           clonedElement.style.position = 'relative';
           
-          // Ensure fonts are applied in cloned document
-          const style = clonedDoc.createElement('style');
-          style.textContent = `
-            @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Cinzel:wght@400;500;600;700&display=swap');
-          `;
-          clonedDoc.head.appendChild(style);
+          // Extract font families from the element's computed styles
+          const titleElement = clonedElement.querySelector('h2');
+          const descElement = clonedElement.querySelector('p');
+          
+          const fonts = new Set();
+          if (titleElement) {
+            const titleFont = window.getComputedStyle(titleElement).fontFamily;
+            fonts.add(titleFont);
+          }
+          if (descElement) {
+            const descFont = window.getComputedStyle(descElement).fontFamily;
+            fonts.add(descFont);
+          }
+          
+          // Build Google Fonts URL with all needed fonts
+          const fontMap = {
+            'Press Start 2P': 'Press+Start+2P',
+            'Dancing Script': 'Dancing+Script',
+            'Great Vibes': 'Great+Vibes',
+            'Cinzel': 'Cinzel',
+            'Instrument Sans': 'Instrument+Sans',
+            'Playfair Display': 'Playfair+Display',
+            'Allura': 'Allura',
+            'Parisienne': 'Parisienne',
+          };
+          
+          const fontFamilies = Array.from(fonts)
+            .flatMap(f => f.split(',').map(ff => ff.trim().replace(/['"]/g, '')))
+            .filter(f => fontMap[f])
+            .map(f => fontMap[f])
+            .filter((v, i, a) => a.indexOf(v) === i); // Remove duplicates
+          
+          if (fontFamilies.length > 0) {
+            const fontUrl = `https://fonts.googleapis.com/css2?${fontFamilies.map(f => `family=${f}`).join('&')}&display=swap`;
+            const style = clonedDoc.createElement('style');
+            style.textContent = `@import url('${fontUrl}');`;
+            clonedDoc.head.appendChild(style);
+            console.log('Added fonts to cloned document:', fontFamilies);
+          }
         }
       }
     });

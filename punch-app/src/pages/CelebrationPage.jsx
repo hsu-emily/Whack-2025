@@ -123,13 +123,17 @@ export default function CelebrationPage() {
           }
         });
 
-        // Use scroll dimensions if offset is 0
-        const width = cardElement.offsetWidth || cardElement.scrollWidth || 500;
-        const height = cardElement.offsetHeight || cardElement.scrollHeight || 300;
+        // Get actual dimensions from the rendered element
+        // The card should maintain its aspect ratio based on the container
+        const width = cardElement.offsetWidth || cardElement.scrollWidth;
+        const height = cardElement.offsetHeight || cardElement.scrollHeight;
+
+        console.log('Card dimensions from layout:', { width, height });
 
         if (width === 0 || height === 0) {
-          console.error('Card element has zero dimensions, using defaults');
-          // Don't return, try with default dimensions
+          console.error('Card element has zero dimensions');
+          setIsGeneratingImage(false);
+          return;
         }
 
         // Wait for all images to load
@@ -163,14 +167,53 @@ export default function CelebrationPage() {
           console.log('All images loaded or timed out');
         }
 
-        // Wait for fonts to load
+        // Wait for fonts to load - specifically the fonts from the layout
         console.log('Waiting for fonts to load...');
+        const fontsToLoad = [];
+        if (layout?.title?.fontFamily) {
+          fontsToLoad.push(...layout.title.fontFamily.split(',').map(f => f.trim().replace(/['"]/g, '')));
+        }
+        if (layout?.description?.fontFamily) {
+          fontsToLoad.push(...layout.description.fontFamily.split(',').map(f => f.trim().replace(/['"]/g, '')));
+        }
+        
+        console.log('Fonts to load:', fontsToLoad);
+        
+        // Load fonts from Google Fonts if needed
+        const uniqueFonts = [...new Set(fontsToLoad)];
+        const fontPromises = uniqueFonts.map(fontName => {
+          // Map font names to Google Fonts names
+          const fontMap = {
+            'Press Start 2P': 'Press+Start+2P',
+            'Dancing Script': 'Dancing+Script',
+            'Great Vibes': 'Great+Vibes',
+            'Cinzel': 'Cinzel',
+            'Instrument Sans': 'Instrument+Sans',
+            'Playfair Display': 'Playfair+Display',
+            'Allura': 'Allura',
+            'Parisienne': 'Parisienne',
+          };
+          
+          const googleFontName = fontMap[fontName] || fontName.replace(/\s+/g, '+');
+          if (googleFontName && !document.querySelector(`link[href*="${googleFontName}"]`)) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = `https://fonts.googleapis.com/css2?family=${googleFontName}&display=swap`;
+            document.head.appendChild(link);
+            console.log(`Loading font: ${fontName} (${googleFontName})`);
+          }
+          return Promise.resolve();
+        });
+        
+        await Promise.all(fontPromises);
+        
+        // Wait for fonts to be ready
         if (document.fonts && document.fonts.ready) {
           await document.fonts.ready;
-          console.log('Fonts loaded');
+          console.log('All fonts loaded');
         } else {
           // Fallback: wait a bit for fonts
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 1500));
           console.log('Font loading timeout (using fallback)');
         }
 
@@ -418,14 +461,9 @@ export default function CelebrationPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
+              className="card-zoom-card"
               style={{
-                width: '1004px',
-                height: '591px',
-                maxWidth: '1004px',
                 marginBottom: '2rem',
-                borderRadius: '1rem',
-                overflow: 'hidden',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
               }}
             >
               <PunchCardPreview
@@ -449,11 +487,10 @@ export default function CelebrationPage() {
           {cardImageUrl && (
             <div
               ref={cardRef}
+              className="card-zoom-card"
               style={{
                 position: 'absolute',
                 left: '-9999px',
-                width: '1004px',
-                height: '591px',
                 visibility: 'hidden',
               }}
             >
@@ -482,13 +519,9 @@ export default function CelebrationPage() {
               transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
               src={cardImageUrl}
               alt={`Completed ${habit.title} punch pass`}
+              className="card-zoom-card"
               style={{
-                width: '1004px',
-                height: '591px',
-                maxWidth: '1004px',
                 marginBottom: '2rem',
-                borderRadius: '1rem',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
                 display: 'block',
                 objectFit: 'contain',
               }}
@@ -500,14 +533,9 @@ export default function CelebrationPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
+              className="card-zoom-card"
               style={{
-                width: '1004px',
-                height: '591px',
-                maxWidth: '1004px',
                 marginBottom: '2rem',
-                borderRadius: '1rem',
-                overflow: 'hidden',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
               }}
             >
               <PunchCardPreview
