@@ -65,14 +65,25 @@ export async function generateShareableCard(cardElement, habit) {
       height: height,
       windowWidth: width,
       windowHeight: height,
+      fontEmbedCSS: true, // Embed fonts in the canvas
       onclone: (clonedDoc) => {
         console.log('html2canvas onclone called');
-        // Ensure cloned element is visible
+        // Ensure cloned element is visible and has correct size
         const clonedElement = clonedDoc.querySelector('.punch-card-preview-container') || 
                              clonedDoc.body.firstElementChild;
         if (clonedElement) {
           clonedElement.style.visibility = 'visible';
           clonedElement.style.opacity = '1';
+          clonedElement.style.width = width + 'px';
+          clonedElement.style.height = height + 'px';
+          clonedElement.style.position = 'relative';
+          
+          // Ensure fonts are applied in cloned document
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Cinzel:wght@400;500;600;700&display=swap');
+          `;
+          clonedDoc.head.appendChild(style);
         }
       }
     });

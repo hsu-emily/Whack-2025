@@ -163,6 +163,17 @@ export default function CelebrationPage() {
           console.log('All images loaded or timed out');
         }
 
+        // Wait for fonts to load
+        console.log('Waiting for fonts to load...');
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+          console.log('Fonts loaded');
+        } else {
+          // Fallback: wait a bit for fonts
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log('Font loading timeout (using fallback)');
+        }
+
         console.log('Starting html2canvas capture...');
         const blob = await generateShareableCard(cardElement, habit);
         if (blob && blob.size > 0) {
@@ -441,6 +452,8 @@ export default function CelebrationPage() {
               style={{
                 position: 'absolute',
                 left: '-9999px',
+                width: '1004px',
+                height: '591px',
                 visibility: 'hidden',
               }}
             >
@@ -470,13 +483,14 @@ export default function CelebrationPage() {
               src={cardImageUrl}
               alt={`Completed ${habit.title} punch pass`}
               style={{
-                width: '100%',
-                maxWidth: '500px',
-                height: 'auto',
+                width: '1004px',
+                height: '591px',
+                maxWidth: '1004px',
                 marginBottom: '2rem',
                 borderRadius: '1rem',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
                 display: 'block',
+                objectFit: 'contain',
               }}
             />
           ) : !isGeneratingImage ? (
@@ -487,8 +501,9 @@ export default function CelebrationPage() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
               style={{
-                width: '100%',
-                maxWidth: '500px',
+                width: '1004px',
+                height: '591px',
+                maxWidth: '1004px',
                 marginBottom: '2rem',
                 borderRadius: '1rem',
                 overflow: 'hidden',
