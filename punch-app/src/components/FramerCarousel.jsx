@@ -27,21 +27,22 @@ function FramerCarousel({ punchCards = [], activeIndex = 0, onCardSelect }) {
     <div className="relative w-full flex flex-col items-center">
       {/* Carousel */}
       <div
-        className="relative flex items-center justify-center w-[340px] sm:w-[600px] mx-auto overflow-visible"
+        className="relative flex items-center justify-center w-full max-w-[600px] mx-auto overflow-hidden"
         style={{ minHeight: 280 }}
       >
         {/* Left arrow - only show if 3+ cards */}
         {punchCards.length >= 3 && (
           <button
             onClick={goLeft}
-            className="absolute left-0 z-30 bg-white/80 rounded-full shadow px-2 py-1 text-2xl top-1/2 -translate-y-1/2 hover:bg-white transition-colors"
+            className="absolute left-2 z-30 bg-white/80 rounded-full shadow px-2 py-1 text-2xl top-1/2 -translate-y-1/2 hover:bg-white transition-colors"
+            style={{ pointerEvents: 'auto' }}
           >
             &#8592;
           </button>
         )}
         
         {/* Cards */}
-        <div className="relative flex items-center justify-center w-full overflow-visible" style={{ height: '280px' }}>
+        <div className="relative flex items-center justify-center w-full overflow-hidden" style={{ height: '280px' }}>
           {punchCards.map((item, idx) => {
             // Calculate offset from active index, handling wrap-around for infinite scroll
             let offset = idx - activeIndex;
@@ -118,7 +119,8 @@ function FramerCarousel({ punchCards = [], activeIndex = 0, onCardSelect }) {
         {punchCards.length >= 3 && (
           <button
             onClick={goRight}
-            className="absolute right-0 z-30 bg-white/80 rounded-full shadow px-2 py-1 text-2xl top-1/2 -translate-y-1/2 hover:bg-white transition-colors"
+            className="absolute right-2 z-30 bg-white/80 rounded-full shadow px-2 py-1 text-2xl top-1/2 -translate-y-1/2 hover:bg-white transition-colors"
+            style={{ pointerEvents: 'auto' }}
           >
             &#8594;
           </button>
