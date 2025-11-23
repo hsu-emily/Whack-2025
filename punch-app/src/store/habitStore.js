@@ -86,6 +86,52 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // Undo last punch (decrement)
+  undoPunch: async (habitId) => {
+    const habit = get().habits.find(h => h.id === habitId);
+    if (!habit || habit.currentPunches <= 0) return false;
+
+    try {
+      const newPunches = Math.max(0, habit.currentPunches - 1);
+      const habitRef = doc(db, 'habits', habitId);
+      
+      // Remove the last log entry
+      const updatedLogs = habit.logs && habit.logs.length > 0 
+        ? habit.logs.slice(0, -1) 
+        : [];
+
+      await updateDoc(habitRef, {
+        currentPunches: newPunches,
+        logs: updatedLogs,
+        // Update lastPunchedAt to the previous punch date, or null if no punches left
+        lastPunchedAt: updatedLogs.length > 0 
+          ? updatedLogs[updatedLogs.length - 1].date 
+          : null
+      });
+
+      set(state => ({
+        habits: state.habits.map(h =>
+          h.id === habitId
+            ? { 
+                ...h, 
+                currentPunches: newPunches, 
+                logs: updatedLogs,
+                lastPunchedAt: updatedLogs.length > 0 
+                  ? updatedLogs[updatedLogs.length - 1].date 
+                  : null
+              }
+            : h
+        )
+      }));
+
+      return true;
+    } catch (error) {
+      console.error('Error undoing punch:', error);
+      set({ error: error.message });
+      return false;
+    }
+  },
+
   // Reset habit (for new cycle)
   resetHabit: async (habitId) => {
     try {

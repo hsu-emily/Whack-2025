@@ -10,6 +10,8 @@ export default function PunchCardPreview({
   titlePlacement = {},
   descriptionPlacement = {},
   punchGridPlacement = {},
+  currentPunches = 0,
+  targetPunches = 10,
 }) {
   const getPunchIcon = (index) => {
     const icon = (index % 2 === 0 ? icon1 : icon2);
@@ -30,12 +32,24 @@ export default function PunchCardPreview({
     punchesPerRow: punchGridPlacement.punchesPerRow || 4, // Default punches per row
   };
 
+  // Calculate total punches needed
+  const totalPunches = currentPunchGrid.numRows * currentPunchGrid.punchesPerRow;
+  const actualTargetPunches = Math.min(targetPunches, totalPunches);
+
   const rows = Array(currentPunchGrid.numRows)
     .fill(0)
     .map((_, rowIdx) =>
       Array(currentPunchGrid.punchesPerRow)
         .fill(0)
-        .map((_, colIdx) => getPunchIcon(rowIdx * currentPunchGrid.punchesPerRow + colIdx))
+        .map((_, colIdx) => {
+          const index = rowIdx * currentPunchGrid.punchesPerRow + colIdx;
+          const isFilled = index < currentPunches && index < actualTargetPunches;
+          return {
+            icon: getPunchIcon(index),
+            isFilled,
+            index
+          };
+        })
     );
 
   return (
@@ -93,28 +107,36 @@ export default function PunchCardPreview({
             className="flex justify-center"
             style={{ gap: currentPunchGrid.punchHorizontalGap }} // Horizontal gap between punches
           >
-            {row.map((icon, i) => (
-              <div
-                key={i}
-                className={`flex items-center justify-center rounded-full`}
-                style={{
-                  width: currentPunchGrid.punchCircleSize,
-                  height: currentPunchGrid.punchCircleSize,
-                  // No explicit background color or border here, making it transparent
-                }}
-              >
-                {typeof icon === 'string' && (icon.includes('.png') || icon.includes('.svg') || icon.startsWith('http') || icon.startsWith('/')) ? (
-                  <img
-                    src={icon}
-                    alt=""
-                    className="object-contain"
-                    style={{ width: currentPunchGrid.punchIconSize, height: currentPunchGrid.punchIconSize }}
-                  />
-                ) : (
-                  <span style={{ fontSize: currentPunchGrid.punchIconSize }}>{icon}</span>
-                )}
-              </div>
-            ))}
+            {row.map((punch, i) => {
+              const punchIndex = punch.index;
+              const showPunch = punchIndex < actualTargetPunches;
+              
+              if (!showPunch) return null;
+              
+              return (
+                <div
+                  key={i}
+                  className={`flex items-center justify-center rounded-full transition-all ${
+                    punch.isFilled ? 'opacity-100' : 'opacity-30'
+                  }`}
+                  style={{
+                    width: currentPunchGrid.punchCircleSize,
+                    height: currentPunchGrid.punchCircleSize,
+                  }}
+                >
+                  {typeof punch.icon === 'string' && (punch.icon.includes('.png') || punch.icon.includes('.svg') || punch.icon.startsWith('http') || punch.icon.startsWith('/')) ? (
+                    <img
+                      src={punch.icon}
+                      alt=""
+                      className="object-contain"
+                      style={{ width: currentPunchGrid.punchIconSize, height: currentPunchGrid.punchIconSize }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: currentPunchGrid.punchIconSize }}>{punch.icon || '○'}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>

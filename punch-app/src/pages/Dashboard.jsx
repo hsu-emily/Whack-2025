@@ -1,28 +1,52 @@
 // src/pages/Dashboard.jsx
-import { useState, useEffect } from 'react';
 import { signOut } from 'firebase/auth';
-import { auth } from '../firebase';
-import { Plus, Sparkles, Target, LogOut } from 'lucide-react';
-import { useHabitStore } from '../store/habitStore';
-import HabitCard from '../components/HabitCard';
-import CreateHabitModal from '../components/CreateHabitModal';
-import ReflectionModal from '../components/ReflectionModal';
-import Layout from '../components/Layout';
+import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, LogOut, Plus, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CardZoomModal from '../components/CardZoomModal';
+import CreateHabitModal from '../components/CreateHabitModal';
+import HabitCard from '../components/HabitCard';
+import Layout from '../components/Layout';
+import ReflectionModal from '../components/ReflectionModal';
+import { auth } from '../firebase';
+import { useHabitStore } from '../store/habitStore';
 
 export default function Dashboard({ user, onLogout }) {
   const navigate = useNavigate();
   const habits = useHabitStore(state => state.habits);
   const punchHabit = useHabitStore(state => state.punchHabit);
+  const undoPunch = useHabitStore(state => state.undoPunch);
   const fetchHabits = useHabitStore(state => state.fetchHabits);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showReflection, setShowReflection] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [zoomedHabit, setZoomedHabit] = useState(null);
 
   useEffect(() => {
     if (user) {
       fetchHabits(user.uid);
     }
   }, [user, fetchHabits]);
+
+  // Reset active index if it's out of bounds
+  useEffect(() => {
+    if (habits.length > 0 && activeIndex >= habits.length) {
+      setActiveIndex(habits.length - 1);
+    } else if (habits.length === 0) {
+      setActiveIndex(0);
+    }
+  }, [habits.length, activeIndex]);
+
+  // Sync zoomedHabit when habits update
+  useEffect(() => {
+    if (zoomedHabit) {
+      const updatedHabit = habits.find(h => h.id === zoomedHabit.id);
+      if (updatedHabit) {
+        setZoomedHabit(updatedHabit);
+      }
+    }
+  }, [habits, zoomedHabit?.id]);
 
   const handleLogout = async () => {
     try {
@@ -50,30 +74,30 @@ export default function Dashboard({ user, onLogout }) {
 
   return (
     <Layout>
-      <div className="w-full max-w-7xl mx-auto px-4 py-6">
+      <div className="dashboard-container">
         {/* Header */}
-        <header className="bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 px-8 py-4 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="text-2xl font-bold text-pink-500" style={{ fontFamily: 'Press Start 2P' }}>
+        <header className="dashboard-header">
+          <div className="dashboard-header-content">
+            <div className="dashboard-header-left">
+              <span className="dashboard-title">
                 Punchie
               </span>
-              <span className="text-sm text-gray-600 hidden sm:inline">
-                Welcome, {user?.displayName?.split(' ')[0] || 'Friend'}! 🐰
+              <span className="dashboard-welcome">
+                Welcome, {user?.displayName?.split(' ')[0] || 'Friend'}! 
               </span>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="dashboard-header-right">
               <button
                 onClick={() => setShowReflection(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-pink-100 hover:bg-pink-200 rounded-full transition-all text-pink-600"
+                className="btn-reflection"
               >
                 <Sparkles size={18} />
-                <span className="text-sm font-medium hidden sm:inline">Reflection</span>
+                <span className="btn-reflection-text">Reflection</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="p-2 hover:bg-pink-100 rounded-full transition-colors text-pink-600"
+                className="btn-logout"
                 title="Logout"
               >
                 <LogOut size={20} />
@@ -83,39 +107,37 @@ export default function Dashboard({ user, onLogout }) {
         </header>
 
         {/* Stats Overview */}
-        <div className="mb-8">
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg p-6 border-2 border-pink-200">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-pink-600">
-              <Target size={24} />
-              Today's Overview ✨
+        <div className="stats-container">
+          <div className="stats-card">
+            <h2 className="stats-title">
+              Today's Overview 
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-pink-100 to-pink-50 rounded-2xl p-4 border border-pink-200">
-                <div className="text-4xl font-bold text-pink-500">{todayHabits}</div>
-                <div className="text-sm text-gray-700 mt-1">Habits to punch today 🎯</div>
+            <div className="stats-grid">
+              <div className="stat-card stat-card-pink">
+                <div className="stat-number stat-number-pink">{todayHabits}</div>
+                <div className="stat-label">Habits to punch today 🎯</div>
               </div>
-              <div className="bg-gradient-to-br from-purple-100 to-purple-50 rounded-2xl p-4 border border-purple-200">
-                <div className="text-4xl font-bold text-purple-500">{totalPunches}</div>
-                <div className="text-sm text-gray-700 mt-1">Total punches 💪</div>
+              <div className="stat-card stat-card-purple">
+                <div className="stat-number stat-number-purple">{totalPunches}</div>
+                <div className="stat-label">Total punches 💪</div>
               </div>
-              <div className="bg-gradient-to-br from-green-100 to-green-50 rounded-2xl p-4 border border-green-200">
-                <div className="text-4xl font-bold text-green-500">{completedHabits}</div>
-                <div className="text-sm text-gray-700 mt-1">Rewards unlocked 🎉</div>
+              <div className="stat-card stat-card-green">
+                <div className="stat-number stat-number-green">{completedHabits}</div>
+                <div className="stat-label">Rewards unlocked 🎉</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Habits Grid */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-pink-600" style={{ fontFamily: 'Press Start 2P' }}>
+        {/* Habits Carousel */}
+        <div className="habits-section">
+          <div className="habits-header">
+            <h2 className="habits-title">
               Your Punch Cards 📇
             </h2>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-400 to-pink-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
-              style={{ fontFamily: 'Press Start 2P', fontSize: '0.75rem' }}
+              className="btn-new-habit"
             >
               <Plus size={20} />
               <span>New Habit</span>
@@ -123,26 +145,93 @@ export default function Dashboard({ user, onLogout }) {
           </div>
 
           {habits.length === 0 ? (
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg p-12 text-center border-2 border-pink-200">
-              <div className="text-6xl mb-4">🐰</div>
-              <h3 className="text-xl font-bold text-pink-600 mb-2">No habits yet!</h3>
-              <p className="text-gray-600 mb-6">Create your first punch card to start your journey ✨</p>
+            <div className="empty-state">
+              <div className="empty-state-emoji">🐰</div>
+              <h3 className="empty-state-title">No habits right now</h3>
+              <p className="empty-state-text">Create your first punch card to start your journey ✨</p>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="px-8 py-3 bg-gradient-to-r from-pink-400 to-pink-500 text-white rounded-full font-medium hover:shadow-lg transition-all"
+                className="btn-create-first"
               >
                 Create Your First Habit
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {habits.map(habit => (
-                <HabitCard
-                  key={habit.id}
-                  habit={habit}
-                  onPunch={() => handlePunch(habit.id)}
-                />
-              ))}
+            <div className="habits-carousel-container">
+              <div className="habits-carousel-wrapper">
+                {/* Left Navigation */}
+                <button
+                  onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
+                  disabled={activeIndex === 0}
+                  className="carousel-nav-btn carousel-nav-left"
+                  aria-label="Previous habit"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+
+                {/* Carousel Cards */}
+                <div className="habits-carousel">
+                  {habits.map((habit, index) => {
+                    const offset = index - activeIndex;
+                    const scale = index === activeIndex ? 1 : 0.85;
+                    const opacity = Math.abs(offset) <= 1 ? 1 - Math.abs(offset) * 0.3 : 0.3;
+                    const zIndex = habits.length - Math.abs(offset);
+                    // Calculate x position as percentage offset from center
+                    const xPosition = `${offset * 110}%`;
+
+                    return (
+                      <motion.div
+                        key={habit.id}
+                        className="carousel-card"
+                        style={{
+                          zIndex,
+                        }}
+                        animate={{
+                          scale,
+                          opacity,
+                          x: xPosition,
+                        }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 300,
+                          damping: 30,
+                        }}
+                        onClick={() => setZoomedHabit(habit)}
+                      >
+                        <HabitCard
+                          habit={habit}
+                          onPunch={() => handlePunch(habit.id)}
+                          hideControls={true}
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Right Navigation */}
+                <button
+                  onClick={() => setActiveIndex(Math.min(habits.length - 1, activeIndex + 1))}
+                  disabled={activeIndex === habits.length - 1}
+                  className="carousel-nav-btn carousel-nav-right"
+                  aria-label="Next habit"
+                >
+                  <ChevronRight size={24} />
+                </button>
+              </div>
+
+              {/* Carousel Indicators */}
+              {habits.length > 1 && (
+                <div className="carousel-indicators">
+                  {habits.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveIndex(index)}
+                      className={`carousel-indicator ${index === activeIndex ? 'active' : ''}`}
+                      aria-label={`Go to habit ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -158,6 +247,22 @@ export default function Dashboard({ user, onLogout }) {
 
       {showReflection && (
         <ReflectionModal onClose={() => setShowReflection(false)} />
+      )}
+
+      {zoomedHabit && (
+        <CardZoomModal
+          habit={zoomedHabit}
+          onClose={() => setZoomedHabit(null)}
+          onPunch={async () => {
+            await handlePunch(zoomedHabit.id);
+            // Don't close immediately - let the modal handle the delay
+            // The modal will stay open for 2 seconds after punching
+          }}
+          onUndo={async () => {
+            await undoPunch(zoomedHabit.id);
+            // The useEffect will automatically sync the updated habit
+          }}
+        />
       )}
     </Layout>
   );

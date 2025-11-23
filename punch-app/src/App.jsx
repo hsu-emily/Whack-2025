@@ -50,7 +50,7 @@ function App() {
 
   return (
     <Router>
-      <CustomCursor size={80} />
+      <CustomCursor size={35} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />

@@ -1,15 +1,51 @@
-import { Share2, RotateCcw, Trash2, Download } from 'lucide-react';
-import { useHabitStore } from '../store/habitStore';
 import { motion } from 'framer-motion';
-import { useState, useRef } from 'react';
-import { generateShareableCard, downloadCard, shareCard } from '../utils/shareCard';
+import { Download, RotateCcw, Share2, Trash2 } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { useHabitStore } from '../store/habitStore';
+import { downloadCard, generateShareableCard, shareCard } from '../utils/shareCard';
+import PunchCardPreview from './PunchCardPreview';
 
-export default function HabitCard({ habit, onPunch }) {
+// Load punch card PNGs
+const punchCardModules = import.meta.glob('../assets/punch_cards/*.png', { eager: true });
+const punchCardMap = {};
+for (const path in punchCardModules) {
+  const filename = path.split('/').pop();
+  punchCardMap[filename] = punchCardModules[path].default;
+}
+
+// Load icon PNGs
+const iconModules = import.meta.glob('../assets/icons/*.png', { eager: true });
+const iconMap = {};
+for (const path in iconModules) {
+  const filename = path.split('/').pop();
+  iconMap[filename] = iconModules[path].default;
+}
+
+export default function HabitCard({ habit, onPunch, hideControls = false }) {
   const { resetHabit, deleteHabit } = useHabitStore();
   const cardRef = useRef(null);
   const [sharing, setSharing] = useState(false);
   const progress = (habit.currentPunches / habit.targetPunches) * 100;
   const isComplete = habit.currentPunches >= habit.targetPunches;
+
+  // Get punch card image and layout
+  const punchCardImage = useMemo(() => {
+    if (habit.punchCardImage && punchCardMap[habit.punchCardImage]) {
+      return punchCardMap[habit.punchCardImage];
+    }
+    // Fallback to first available card
+    return Object.values(punchCardMap)[0] || null;
+  }, [habit.punchCardImage]);
+
+  const layout = habit.layout || {
+    title: { top: '10%', left: '0%', textAlign: 'center', color: '#333', fontSize: '2rem', fontWeight: 'bold', width: '100%' },
+    description: { top: '25%', left: '0%', textAlign: 'center', color: '#555', fontSize: '1rem', width: '80%' },
+    punchGrid: { top: '45%', left: '50%', transform: 'translateX(-50%)', punchCircleSize: '80px', punchIconSize: '60px', punchHorizontalGap: '40px', punchVerticalGap: '50px', numRows: 2, punchesPerRow: 5 }
+  };
+
+  // Get icons
+  const icon1 = habit.icon1 ? (iconMap[habit.icon1] || habit.icon1) : null;
+  const icon2 = habit.icon2 ? (iconMap[habit.icon2] || habit.icon2) : null;
 
   const handleReset = () => {
     if (confirm('Reset this habit card? This will clear all punches.')) {
@@ -57,29 +93,64 @@ export default function HabitCard({ habit, onPunch }) {
     }
   };
 
+  // Create punch grid with filled/unfilled states
+  const getPunchIcon = (index) => {
+    if (index < habit.currentPunches) {
+      // Return filled icon (alternate between icon1 and icon2)
+      return (index % 2 === 0 ? icon1 : icon2) || '✓';
+    }
+    return null; // Empty punch
+  };
+
+  // Update layout to show filled punches
+  const punchGridLayout = {
+    ...layout.punchGrid,
+    filledPunches: habit.currentPunches,
+    totalPunches: habit.targetPunches
+  };
+
   return (
     <motion.div
       ref={cardRef}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-2xl"
-      style={{ borderTop: `4px solid ${habit.theme?.primary || '#8B5CF6'}` }}
+      className="habit-card"
     >
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="text-3xl mb-2">{habit.theme?.emoji || '⭐'}</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-1">{habit.title}</h3>
-            {habit.description && (
-              <p className="text-sm text-gray-600">{habit.description}</p>
-            )}
+      {/* Punch Card Preview */}
+      <div className="relative w-full" style={{ aspectRatio: '1004/591', minHeight: '300px' }}>
+        {punchCardImage ? (
+          <PunchCardPreview
+            name={habit.title}
+            description={habit.description || ''}
+            icon1={icon1}
+            icon2={icon2}
+            cardImage={punchCardImage}
+            isDailyPunch={habit.timeWindow === 'daily'}
+            titlePlacement={layout.title}
+            descriptionPlacement={layout.description}
+            punchGridPlacement={punchGridLayout}
+            currentPunches={habit.currentPunches}
+            targetPunches={habit.targetPunches}
+          />
+        ) : (
+          <div className="habit-card-fallback">
+            <div className="habit-card-fallback-content">
+              <div className="habit-card-fallback-emoji">{habit.theme?.emoji || '⭐'}</div>
+              <h3 className="habit-card-fallback-title">{habit.title}</h3>
+            </div>
           </div>
-          <div className="flex gap-1">
+        )}
+      </div>
+
+      {/* Card Controls and Info - Hidden in carousel view */}
+      {!hideControls && (
+        <div className="habit-card-content">
+          {/* Action Buttons */}
+          <div className="habit-card-actions">
             <button
               onClick={handleShare}
               disabled={sharing}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              className="habit-card-action-btn"
               title="Share"
             >
               <Share2 size={16} className="text-gray-600" />
@@ -87,100 +158,69 @@ export default function HabitCard({ habit, onPunch }) {
             <button
               onClick={handleDownload}
               disabled={sharing}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              className="habit-card-action-btn"
               title="Download"
             >
               <Download size={16} className="text-gray-600" />
             </button>
             <button
               onClick={handleReset}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="habit-card-action-btn"
               title="Reset"
             >
               <RotateCcw size={16} className="text-gray-600" />
             </button>
             <button
               onClick={handleDelete}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="habit-card-action-btn"
               title="Delete"
             >
               <Trash2 size={16} className="text-gray-600" />
             </button>
           </div>
-        </div>
 
-        {/* Progress Bar */}
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700">
-              {habit.currentPunches} / {habit.targetPunches} punches
-            </span>
-            <span 
-              className="text-sm font-bold"
-              style={{ color: habit.theme?.primary || '#8B5CF6' }}
+          {/* Progress Info */}
+          <div className="mb-4">
+            <div className="habit-progress-info">
+              <span className="habit-progress-text">
+                {habit.currentPunches} / {habit.targetPunches} punches
+              </span>
+              <span className="habit-progress-percent">
+                {Math.round(progress)}%
+              </span>
+            </div>
+            <div className="habit-progress-bar">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className="habit-progress-fill"
+              />
+            </div>
+          </div>
+
+          {/* Action Button */}
+          {!isComplete ? (
+            <button
+              onClick={onPunch}
+              className="habit-punch-btn"
             >
-              {Math.round(progress)}%
-            </span>
-          </div>
-          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="h-full rounded-full"
-              style={{
-                background: `linear-gradient(to right, ${habit.theme?.primary || '#8B5CF6'}, ${habit.theme?.secondary || '#EC4899'})`
-              }}
-            />
-          </div>
+              Punch Today! 👊
+            </button>
+          ) : (
+            <div className="habit-complete">
+              🎉 Reward: {habit.reward || 'Completed!'}
+            </div>
+          )}
+
+          {/* Timestamp */}
+          {habit.lastPunchedAt && (
+            <p className="habit-timestamp">
+              Last punched: {new Date(habit.lastPunchedAt).toLocaleDateString()}
+            </p>
+          )}
         </div>
-
-        {/* Punch Grid */}
-        <div className="grid grid-cols-5 gap-2 mb-4">
-          {Array.from({ length: habit.targetPunches }).map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ scale: 0 }}
-              animate={{ scale: i < habit.currentPunches ? 0.95 : 1 }}
-              className={`aspect-square rounded-lg border-2 flex items-center justify-center text-xl transition-all ${
-                i < habit.currentPunches
-                  ? 'border-transparent'
-                  : 'border-dashed border-gray-300'
-              }`}
-              style={{
-                backgroundColor: i < habit.currentPunches ? habit.theme?.primary : 'transparent',
-                color: i < habit.currentPunches ? 'white' : habit.theme?.primary || '#8B5CF6'
-              }}
-            >
-              {i < habit.currentPunches ? '✓' : '○'}
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Action Button */}
-        {!isComplete ? (
-          <button
-            onClick={onPunch}
-            className="w-full py-3 rounded-xl font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-md"
-            style={{
-              background: `linear-gradient(to right, ${habit.theme?.primary || '#8B5CF6'}, ${habit.theme?.secondary || '#EC4899'})`
-            }}
-          >
-            Punch Today! 👊
-          </button>
-        ) : (
-          <div className="w-full py-3 rounded-xl font-bold text-center bg-gradient-to-r from-green-500 to-emerald-500 text-white">
-            🎉 Reward: {habit.reward || 'Completed!'}
-          </div>
-        )}
-
-        {/* Timestamp */}
-        {habit.lastPunchedAt && (
-          <p className="text-xs text-gray-500 mt-2 text-center">
-            Last punched: {new Date(habit.lastPunchedAt).toLocaleDateString()}
-          </p>
-        )}
-      </div>
+      )}
     </motion.div>
   );
 }

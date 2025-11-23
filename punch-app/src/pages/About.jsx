@@ -5,11 +5,15 @@ import NavBar from '../components/NavBar';
 const About = () => {
     return (
         <Layout>
-            <NavBar/>
-            <h1>Welcome to Punchie Pass</h1>
-            <p>
-                This is the About Page
-            </p>
+           <NavBar></NavBar>
+            <div className="page-content">
+                <h1 className="page-heading">
+                    Welcome to Punchie Pass
+                </h1>
+                <p className="page-text">
+                    This is the About Page
+                </p>
+            </div>
         </Layout>
     );
 };

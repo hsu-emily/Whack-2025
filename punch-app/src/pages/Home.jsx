@@ -6,10 +6,14 @@ const Home = () => {
   return (
     <Layout>
       <NavBar />
-      <h1>Welcome to Punchie Pass</h1>
-      <p>
-        This is the home page. Use the navigation to explore the app features.
-      </p>
+      <div className="page-content">
+        <h1 className="page-heading">
+          Welcome to Punchie Pass
+        </h1>
+        <p className="page-text">
+          This is the home page. Use the navigation to explore the app features.
+        </p>
+      </div>
     </Layout>
   );
 };

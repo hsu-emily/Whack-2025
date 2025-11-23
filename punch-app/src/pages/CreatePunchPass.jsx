@@ -81,13 +81,13 @@ const CreatePunchPass = () => {
   const [isDailyPunch, setIsDailyPunch] = useState(false);
 
   const iconList = [
-    { name: "None", value: "" },
-    { name: "Bunny", value: "bunny.png" },
-    { name: "Shoe", value: "shoe.png" },
-    { name: "Dumbbell", value: "dumbbell.png" },
-    { name: "Paintbrush", value: "paintbrush.png" },
-    { name: "Star", value: "⭐" },
-    { name: "Heart", value: "❤️" },
+    { name: "None", value: "", description: "No icon" },
+    { name: "Bunny", value: "bunny.png", description: "Cute bunny icon" },
+    { name: "Shoe", value: "shoe.png", description: "Shoe icon" },
+    { name: "Dumbbell", value: "dumbbell.png", description: "Fitness dumbbell icon" },
+    { name: "Paintbrush", value: "paintbrush.png", description: "Art paintbrush icon" },
+    { name: "Star", value: "⭐", description: "Star emoji" },
+    { name: "Heart", value: "❤️", description: "Heart emoji" },
   ];
 
   const getBackgroundImage = (backgroundName) => {
@@ -123,13 +123,14 @@ const CreatePunchPass = () => {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto p-6 flex flex-col items-center">
-        {/* Preview Card */}
-        <div className="w-full flex justify-center mb-10">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col h-screen">
+        {/* Preview Card at Top */}
+        <div className="w-full flex justify-center mb-4 sm:mb-6 flex-shrink-0">
           <div
-            className="relative rounded-2xl shadow-xl overflow-hidden flex-shrink-0"
+            className="relative rounded-2xl shadow-xl overflow-hidden"
             style={{
-              width: "1004px",
+              width: "100%",
+              maxWidth: "1004px",
               height: "591px",
             }}
           >
@@ -146,13 +147,13 @@ const CreatePunchPass = () => {
           </div>
         </div>
 
-        {/* Editing Controls */}
-        <div className="w-full bg-white/80 backdrop-blur-sm p-8 rounded-xl shadow-lg flex flex-col gap-6 mb-8">
+        {/* Middle Section - Quick Controls */}
+        <div className="w-full bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-lg flex flex-col sm:flex-row gap-4 sm:gap-6 mb-4 flex-shrink-0">
           {/* Background Selector */}
-          <div>
+          <div className="flex-1">
             <label
               htmlFor="background-select"
-              className="block text-sm font-semibold text-gray-700 mb-2"
+              className="block text-sm font-semibold text-gray-700 mb-2 text-center"
             >
               Background:
             </label>
@@ -160,7 +161,7 @@ const CreatePunchPass = () => {
               id="background-select"
               value={selectedBackground}
               onChange={(e) => setSelectedBackground(e.target.value)}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-pink-400 focus:outline-none transition-colors"
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-pink-400 focus:outline-none transition-colors text-sm text-center"
             >
               <option value="WindowsGreen.png">Green Windows</option>
               <option value="WindowsPink.png">Pink Windows</option>
@@ -168,10 +169,10 @@ const CreatePunchPass = () => {
           </div>
 
           {/* Title Input */}
-          <div>
+          <div className="flex-1">
             <label
               htmlFor="title-input"
-              className="block text-sm font-semibold text-gray-700 mb-2"
+              className="block text-sm font-semibold text-gray-700 mb-2 text-center"
             >
               Title:
             </label>
@@ -181,15 +182,15 @@ const CreatePunchPass = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter punch pass title"
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-pink-400 focus:outline-none transition-colors"
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-pink-400 focus:outline-none transition-colors text-sm text-center"
             />
           </div>
 
           {/* Description Input */}
-          <div>
+          <div className="flex-1">
             <label
               htmlFor="description-input"
-              className="block text-sm font-semibold text-gray-700 mb-2"
+              className="block text-sm font-semibold text-gray-700 mb-2 text-center"
             >
               Description:
             </label>
@@ -197,74 +198,14 @@ const CreatePunchPass = () => {
               id="description-input"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter punch pass description"
-              rows="3"
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-pink-400 focus:outline-none transition-colors resize-none"
+              placeholder="Enter description"
+              rows="2"
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-pink-400 focus:outline-none transition-colors resize-none text-sm text-center"
             />
           </div>
 
-          {/* Icon Pickers */}
-          <div>
-            <div className="font-semibold text-gray-700 mb-2">
-              Choose Icon 1:
-            </div>
-            <div className="flex flex-wrap gap-4 mb-4">
-              {iconList.map((icon) => (
-                <div
-                  key={icon.value}
-                  onClick={() => setSelectedIcon1(icon.value)}
-                  className={`w-12 h-12 flex items-center justify-center rounded-full cursor-pointer border-2 ${
-                    selectedIcon1 === icon.value
-                      ? "border-pink-500"
-                      : "border-transparent"
-                  }`}
-                >
-                  {icon.value ? (
-                    icon.value.includes(".png") || icon.value.includes(".svg") ? (
-                      <img
-                        src={iconMap[icon.value] || icon.value}
-                        alt={icon.name}
-                        className="w-8 h-8 object-contain"
-                      />
-                    ) : (
-                      <span className="text-2xl">{icon.value}</span>
-                    )
-                  ) : null}
-                </div>
-              ))}
-            </div>
-            <div className="font-semibold text-gray-700 mb-2">
-              Choose Icon 2:
-            </div>
-            <div className="flex flex-wrap gap-4">
-              {iconList.map((icon) => (
-                <div
-                  key={icon.value}
-                  onClick={() => setSelectedIcon2(icon.value)}
-                  className={`w-12 h-12 flex items-center justify-center rounded-full cursor-pointer border-2 ${
-                    selectedIcon2 === icon.value
-                      ? "border-pink-500"
-                      : "border-transparent"
-                  }`}
-                >
-                  {icon.value ? (
-                    icon.value.includes(".png") || icon.value.includes(".svg") ? (
-                      <img
-                        src={iconMap[icon.value] || icon.value}
-                        alt={icon.name}
-                        className="w-8 h-8 object-contain"
-                      />
-                    ) : (
-                      <span className="text-2xl">{icon.value}</span>
-                    )
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Daily Punch Checkbox */}
-          <div className="flex items-center">
+          <div className="flex items-center justify-center">
             <input
               id="daily-punch-checkbox"
               type="checkbox"
@@ -281,17 +222,104 @@ const CreatePunchPass = () => {
           </div>
         </div>
 
+        {/* Bottom Section - Scrollable Icon Selection */}
+        <div className="flex-1 flex flex-col gap-4 min-h-0">
+          {/* Icon 1 Selection */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 flex-1 flex flex-col min-h-0">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3 text-center">
+              Choose Icon 1:
+            </h3>
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex flex-wrap gap-4 justify-center pb-2">
+                {iconList.map((icon) => (
+                  <div
+                    key={`icon1-${icon.value}`}
+                    onClick={() => setSelectedIcon1(icon.value)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg cursor-pointer border-2 transition-all ${
+                      selectedIcon1 === icon.value
+                        ? "border-pink-500 bg-pink-50"
+                        : "border-transparent hover:border-pink-200 hover:bg-pink-50/50"
+                    }`}
+                  >
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-full bg-white shadow-md">
+                      {icon.value ? (
+                        icon.value.includes(".png") || icon.value.includes(".svg") ? (
+                          <img
+                            src={iconMap[icon.value] || icon.value}
+                            alt={icon.name}
+                            className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                          />
+                        ) : (
+                          <span className="text-3xl sm:text-4xl">{icon.value}</span>
+                        )
+                      ) : (
+                        <span className="text-gray-400 text-sm">None</span>
+                      )}
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-semibold text-gray-700">{icon.name}</div>
+                      <div className="text-xs text-gray-500 mt-1">{icon.description}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Icon 2 Selection */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 flex-1 flex flex-col min-h-0">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3 text-center">
+              Choose Icon 2:
+            </h3>
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex flex-wrap gap-4 justify-center pb-2">
+                {iconList.map((icon) => (
+                  <div
+                    key={`icon2-${icon.value}`}
+                    onClick={() => setSelectedIcon2(icon.value)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg cursor-pointer border-2 transition-all ${
+                      selectedIcon2 === icon.value
+                        ? "border-pink-500 bg-pink-50"
+                        : "border-transparent hover:border-pink-200 hover:bg-pink-50/50"
+                    }`}
+                  >
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-full bg-white shadow-md">
+                      {icon.value ? (
+                        icon.value.includes(".png") || icon.value.includes(".svg") ? (
+                          <img
+                            src={iconMap[icon.value] || icon.value}
+                            alt={icon.name}
+                            className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                          />
+                        ) : (
+                          <span className="text-3xl sm:text-4xl">{icon.value}</span>
+                        )
+                      ) : (
+                        <span className="text-gray-400 text-sm">None</span>
+                      )}
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-semibold text-gray-700">{icon.name}</div>
+                      <div className="text-xs text-gray-500 mt-1">{icon.description}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Action Buttons */}
-        <div className="text-center space-x-4">
+        <div className="text-center space-x-4 sm:space-x-6 pt-4 flex-shrink-0">
           <button
             onClick={handleCreatePunchPass}
-            className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 shadow-lg"
+            className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 sm:py-4 px-8 sm:px-10 rounded-lg transition-colors duration-200 shadow-lg text-sm sm:text-base"
           >
             Create Punch Pass
           </button>
           <button
             onClick={handleSaveDraft}
-            className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 shadow-lg"
+            className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 sm:py-4 px-8 sm:px-10 rounded-lg transition-colors duration-200 shadow-lg text-sm sm:text-base"
           >
             Save Draft
           </button>
