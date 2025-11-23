@@ -1,5 +1,5 @@
-// src/services/geminiService.js
-// IMPROVED VERSION - Better prompts for better suggestions!
+// Enhanced geminiService with conversation support for ReflectionModal
+// This file adds conversational AI features while maintaining compatibility with existing code
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
@@ -26,7 +26,7 @@ async function callGemini(userPrompt, options = {}) {
       parts: [{ text: options.systemInstruction ? `${options.systemInstruction}\n\n${userPrompt}` : userPrompt }]
     }],
     generationConfig: {
-      temperature: options.temperature || 0.8, // Increased for more creative suggestions
+      temperature: options.temperature || 0.8,
       topK: options.topK || 40,
       topP: options.topP || 0.95,
       maxOutputTokens: options.maxOutputTokens || 2048,
@@ -95,12 +95,121 @@ function parseJSON(text) {
   }
 }
 
-// ==========================================
-// IMPROVED PROMPTS - UPDATED: No targetPunches in AI responses
-// ==========================================
+// Conversational reflection analysis for ReflectionModal
+export async function analyzeReflectionConversational(userMessage, habits, options = {}) {
+  const { conversationHistory = [] } = options;
+  
+  // Build context from conversation history
+  const conversationContext = conversationHistory
+    .slice(-6) // Last 3 exchanges (6 messages)
+    .map(msg => `${msg.type === 'user' ? 'Student' : 'Coach'}: ${msg.content}`)
+    .join('\n');
 
+  const habitsSummary = habits.map(h => 
+    `• ${h.title}: ${h.currentPunches}/${h.targetPunches} punches (${Math.round((h.currentPunches / h.targetPunches) * 100)}%)`
+  ).join('\n');
+
+  const systemInstruction = `You are a warm, supportive life coach for college students. You:
+- Listen actively and respond to what they're saying
+- Ask thoughtful follow-up questions
+- Celebrate small wins
+- Normalize struggles
+- Give practical, actionable advice
+- Remember previous conversation context
+- Keep responses conversational and concise (2-4 sentences)
+- Avoid being preachy or judgmental`;
+
+  const prompt = `**Conversation so far:**
+${conversationContext || 'This is the start of the conversation.'}
+
+**Student's current message:**
+"${userMessage}"
+
+**Their habit progress:**
+${habitsSummary}
+
+**Your task:**
+1. Respond naturally to what they just said
+2. Provide 2-3 specific, actionable suggestions they can explore
+3. Keep your message warm, concise, and conversational
+
+**Return this JSON:**
+{
+  "message": "Your warm, supportive response (2-4 sentences)",
+  "suggestions": [
+    "Specific suggestion #1",
+    "Specific suggestion #2",
+    "Specific suggestion #3"
+  ]
+}
+
+**Good response examples:**
+{
+  "message": "It sounds like you're feeling overwhelmed, and that's completely normal. What if we broke things down into smaller steps?",
+  "suggestions": [
+    "Start with just 5 minutes of the hardest habit",
+    "Move your easiest habit to right after breakfast",
+    "Give yourself permission to skip one day guilt-free"
+  ]
+}
+
+{
+  "message": "That's amazing progress! You're building momentum. How does it feel to see those punches adding up?",
+  "suggestions": [
+    "Tell me what's making this habit stick",
+    "Let's talk about keeping this energy going",
+    "Share what you're learning about yourself"
+  ]
+}
+
+**Bad examples (don't do this):**
+❌ Generic: "Good job, keep going!"
+❌ Too long: [5+ sentences]
+❌ Vague: "Try to be more disciplined"
+❌ Not personalized: Ignoring what they just said`;
+
+  try {
+    const response = await callGemini(prompt, { 
+      systemInstruction, 
+      temperature: 0.85,
+      maxOutputTokens: 1024
+    });
+    
+    const parsed = parseJSON(response);
+    
+    // Validate response structure
+    if (!parsed.message || !Array.isArray(parsed.suggestions)) {
+      throw new Error('Invalid response structure');
+    }
+    
+    // Ensure suggestions are strings and limited to 3
+    parsed.suggestions = parsed.suggestions
+      .filter(s => typeof s === 'string' && s.trim())
+      .slice(0, 3);
+    
+    return parsed;
+  } catch (error) {
+    console.error('Error in conversational analysis:', error);
+    
+    // Fallback response
+    return {
+      message: "I'm here to listen. Tell me more about what's on your mind.",
+      suggestions: [
+        "Share what's been most challenging this week",
+        "Tell me about a habit that's going well",
+        "Let's explore what would make things easier"
+      ]
+    };
+  }
+}
+
+// Main export that ReflectionModal uses
+export async function analyzeReflection(userMessage, habits, options = {}) {
+  return analyzeReflectionConversational(userMessage, habits, options);
+}
+
+// Generate habit suggestions for onboarding
 export async function generateHabitSuggestions(onboardingData) {
-  // UPDATED: Removed targetPunches from AI generation
   const systemInstruction = `You are an expert college student success coach who specializes in building sustainable habits. You understand student life - classes, exams, social life, stress, and time constraints.`;
   
   const prompt = `A college student needs help building better habits. Here's their situation:
@@ -119,46 +228,21 @@ ${onboardingData.goals || 'Be more productive and feel less stressed'}
 ${onboardingData.additionalContext || 'Typical college student schedule'}
 
 **Your Task:**
-Create 3-5 specific, actionable habits that will actually help THIS student. Make them:
+Create 3-5 specific, actionable habits that will actually help THIS student.
 
-1. **Specific** - Not "study more" but "Review lecture notes for 20 minutes after each class"
-2. **Realistic** - Something a busy student can actually do
-3. **Measurable** - Clear success criteria
-4. **Impactful** - Will genuinely help with their struggles
-5. **Varied** - Mix of academic, wellness, and life skills
-
-**Important:** All habits will be tracked on punch cards with exactly 10 punches. Don't mention specific numbers of days or punches in your suggestions.
-
-**Good Examples:**
-- "Do a 5-minute brain dump before bed to clear your mind"
-- "Set phone to Do Not Disturb during first morning hour"
-- "Review and organize notes within 24 hours of each lecture"
-- "Take a 10-minute walk between study sessions"
-
-**Bad Examples (too vague):**
-- "Study more"
-- "Be healthier"
-- "Manage time better"
-
-Return ONLY this JSON array (no other text):
+Return ONLY this JSON array:
 [
   {
     "title": "Specific, actionable habit name (under 50 characters)",
-    "description": "One sentence explaining why this helps THIS student (under 100 characters)",
+    "description": "One sentence explaining why this helps (under 100 characters)",
     "frequency": "daily",
-    "reward": "Specific, motivating reward they'd actually want"
+    "reward": "Specific, motivating reward"
   }
-]
-
-Rules:
-- frequency: exactly "daily" or "weekly"
-- rewards: specific and personal, not generic
-- Do NOT include targetPunches field - it will be added automatically`;
+]`;
 
   try {
     const response = await callGemini(prompt, { systemInstruction, temperature: 0.9 });
     const habits = parseJSON(response);
-    // Add targetPunches: 10 to all habits automatically
     return habits.map(h => ({ ...h, targetPunches: 10 }));
   } catch (error) {
     return [{
@@ -171,107 +255,67 @@ Rules:
   }
 }
 
+// Transform a goal into specific habits
 export async function transformGoalToHabits(goalText) {
-  // UPDATED: Removed targetPunches from AI generation
-  const systemInstruction = `You are a habit formation expert who helps college students break down big goals into daily actions. You understand that students need specific, achievable steps - not vague advice.`;
+  const systemInstruction = `You are a habit formation expert who helps college students break down big goals into daily actions.`;
   
-  const prompt = `A college student has this goal:
-
-**"${goalText}"**
-
-Help them achieve it by creating 2-3 specific habits they can track daily or weekly.
-
-**Requirements:**
-1. **Be SPECIFIC** - Turn their vague goal into concrete actions
-2. **Make it MEASURABLE** - They need to know if they did it or not
-3. **Keep it SIMPLE** - Students are busy, habits should be easy to start
-4. **Show the CONNECTION** - Explain how this habit leads to their goal
-
-**Important:** All punch cards have exactly 10 punches, so don't mention specific numbers of days or punches.
-
-**Examples of GOOD transformations:**
-
-Goal: "I want to stop procrastinating"
-→ Habits:
-  • "Start assignments within 24 hours of receiving them (even if just reading the prompt)"
-  • "Use Pomodoro: 25 min work, 5 min break, no phone during work"
-  • "Plan next day's top 3 tasks every evening before bed"
-
-Goal: "I want to be less stressed"
-→ Habits:
-  • "5-minute breathing exercise when you wake up"
-  • "Write 3 things you're grateful for before bed"
-  • "Take a 15-minute walk without your phone daily"
-
-Goal: "I want better grades"
-→ Habits:
-  • "Review and summarize each lecture within 24 hours"
-  • "Complete practice problems before looking at solutions"
-  • "Teach concepts to a friend or rubber duck weekly"
-
-**Examples of BAD transformations (too vague):**
-❌ "Study more effectively"
-❌ "Manage time better"
-❌ "Take care of yourself"
-
-Now transform their goal: "${goalText}"
+  const prompt = `Transform this goal into 2-3 specific habits: "${goalText}"
 
 Return ONLY this JSON array:
 [
   {
-    "title": "Specific action they can do (under 60 characters)",
-    "description": "One sentence: how this helps achieve '${goalText}' (under 120 characters)",
+    "title": "Specific action (under 60 characters)",
+    "description": "How this helps achieve the goal (under 120 characters)",
     "frequency": "daily"
   }
-]
-
-Rules:
-- frequency: exactly "daily" or "weekly" 
-- title: Must be a specific, measurable action
-- description: Must connect back to their original goal
-- Do NOT include targetPunches field - it will be added automatically`;
+]`;
 
   try {
     const response = await callGemini(prompt, { systemInstruction, temperature: 0.85 });
     const habits = parseJSON(response);
-    console.log('✅ Generated habits:', habits);
-    // Add targetPunches: 10 to all habits automatically
     return habits.map(h => ({ ...h, targetPunches: 10 }));
   } catch (error) {
-    console.error('Error:', error);
     throw error;
   }
 }
 
-export async function generateThemeFromDescription(description) {
-  // UNCHANGED - no targetPunches here
-  const systemInstruction = `You are a UI/UX designer who creates beautiful, harmonious color palettes. You understand color theory, psychology, and what makes interfaces feel good.`;
+// Generate reward ideas for a habit
+export async function generateRewardIdeas(habitTitle, userPreferences = '') {
+  const systemInstruction = `You are a motivational expert who understands what actually motivates college students.`;
   
-  const prompt = `Create a beautiful color theme based on this vibe:
+  const prompt = `Suggest 4-5 specific rewards for completing this habit: "${habitTitle}"
+${userPreferences ? `Preferences: ${userPreferences}` : ''}
 
-**"${description}"**
+Return ONLY a JSON array:
+["Specific reward with emoji 🎉", "Another specific reward 🎮", ...]`;
 
-Think about:
-- What emotions does this evoke?
-- What colors naturally fit this mood?
-- How can colors complement each other?
+  try {
+    const response = await callGemini(prompt, { systemInstruction, temperature: 0.9 });
+    return parseJSON(response);
+  } catch (error) {
+    return [
+      "Your favorite coffee or boba drink 🧋",
+      "30 minutes of guilt-free social media time 📱",
+      "Order from your favorite restaurant 🍕",
+      "Buy that item under $20 you've wanted 🛍️"
+    ];
+  }
+}
 
-**Good color pairings:**
-- Ocean sunset: Coral pink (#FF6B9D) + Turquoise (#4ECDC4)
-- Forest morning: Sage green (#87A96B) + Soft gold (#FFD97D)
-- Starry night: Deep purple (#6C5CE7) + Pale blue (#A8D8EA)
-- Cherry blossom: Soft pink (#FFB6C1) + Cream (#FFF8DC)
+// Generate color theme from description
+export async function generateThemeFromDescription(description) {
+  const systemInstruction = `You are a UI/UX designer who creates beautiful, harmonious color palettes.`;
+  
+  const prompt = `Create a color theme based on: "${description}"
 
 Return ONLY this JSON:
 {
-  "name": "Creative, evocative name (2-3 words)",
+  "name": "Creative name (2-3 words)",
   "primary": "#HEX_COLOR",
   "secondary": "#HEX_COLOR",
-  "emoji": "Perfect emoji for this vibe",
-  "description": "Poetic one-sentence description"
-}
-
-Use real hex colors that complement each other beautifully.`;
+  "emoji": "Perfect emoji",
+  "description": "One sentence description"
+}`;
 
   try {
     const response = await callGemini(prompt, { systemInstruction, temperature: 0.95 });
@@ -290,102 +334,7 @@ Use real hex colors that complement each other beautifully.`;
   }
 }
 
-export async function analyzeReflection(reflectionText, habits, completionData) {
-  // UNCHANGED - no targetPunches generation here
-  const habitsSummary = habits.map(h => 
-    `• ${h.title}: ${h.currentPunches}/${h.targetPunches} punches (${Math.round((h.currentPunches / h.targetPunches) * 100)}%)`
-  ).join('\n');
-
-  const systemInstruction = `You are a supportive life coach for college students. You're empathetic, understanding, and give practical advice. You celebrate progress and help students learn from setbacks without being judgmental.`;
-
-  const prompt = `A college student is reflecting on their week:
-
-**Their Reflection:**
-"${reflectionText}"
-
-**Their Progress:**
-${habitsSummary}
-
-**Your Role:**
-Respond with empathy and actionable advice. Be their supportive coach.
-
-**Give 2-3 specific suggestions:**
-✅ GOOD: "Try doing your hardest habit first thing in the morning when your willpower is highest"
-✅ GOOD: "Your 3/10 completion suggests the habit might be too ambitious - try cutting it to 2/10 next week"
-❌ BAD: "You need to be more disciplined"
-❌ BAD: "Try harder next time"
-
-**Write an encouraging message (2-3 sentences):**
-✅ GOOD: "I can see you're really trying, and that matters more than perfect completion. Building habits is tough, especially with everything else you're managing. Let's adjust to make next week easier."
-❌ BAD: "Good job, keep it up."
-
-Return ONLY this JSON:
-{
-  "suggestions": [
-    "Specific, actionable tip with reasoning",
-    "Another concrete suggestion",
-    "One more helpful tip"
-  ],
-  "message": "Warm, personal, empathetic message that acknowledges their effort"
-}`;
-
-  try {
-    const response = await callGemini(prompt, { systemInstruction, temperature: 0.85 });
-    return parseJSON(response);
-  } catch (error) {
-    return {
-      suggestions: [
-        "Try scheduling your toughest habit for when you have the most energy (usually mornings)",
-        "If you're consistently missing a habit, make it smaller - 10 minutes instead of 30",
-        "Celebrate completing even one punch - progress isn't all-or-nothing"
-      ],
-      message: "Building new habits is hard, but you're showing up and trying. That's what matters most. Be patient with yourself!"
-    };
-  }
-}
-
-export async function generateRewardIdeas(habitTitle, userPreferences = '') {
-  // UNCHANGED - no targetPunches here
-  const systemInstruction = `You are a motivational expert who understands what actually motivates college students. You suggest rewards that are specific, achievable, and genuinely exciting.`;
-  
-  const prompt = `Suggest rewards for completing this habit:
-
-**Habit:** "${habitTitle}"
-${userPreferences ? `**Preferences:** ${userPreferences}` : ''}
-
-**Requirements:**
-- Mix of FREE and low-cost options
-- Specific, not generic
-- Actually motivating for college students
-- Varied (treats, experiences, purchases, self-care)
-
-**Good Examples:**
-✅ "Order your favorite boba drink 🧋"
-✅ "Buy that game you've been eyeing on Steam 🎮"
-✅ "Take a guilt-free 2-hour nap 😴"
-✅ "Watch 2 episodes of your show with snacks 📺"
-
-**Bad Examples (too vague):**
-❌ "Treat yourself"
-❌ "Do something nice"
-❌ "Relax"
-
-Return ONLY this JSON array (4-5 rewards):
-["Specific reward with emoji 🎉", "Another specific reward 🎮", ...]`;
-
-  try {
-    const response = await callGemini(prompt, { systemInstruction, temperature: 0.9 });
-    return parseJSON(response);
-  } catch (error) {
-    return [
-      "Your favorite coffee or boba drink 🧋",
-      "30 minutes of guilt-free social media time 📱",
-      "Order from your favorite restaurant 🍕",
-      "Buy that item under $20 you've wanted 🛍️"
-    ];
-  }
-}
-
+// Test Gemini connection
 export async function testGeminiConnection() {
   console.log('🧪 Testing...');
   try {
@@ -406,6 +355,7 @@ export async function testGeminiConnection() {
   }
 }
 
+// Get API status
 export function getAPIStatus() {
   return {
     hasAPIKey: !!GEMINI_API_KEY,
@@ -414,7 +364,7 @@ export function getAPIStatus() {
   };
 }
 
-// Export the model for use in statsService.js
+// Export model for statsService.js compatibility
 export const model = {
   generateContent: async (prompt) => {
     const response = await callGemini(prompt);

@@ -279,7 +279,7 @@ export default function Dashboard({ user, onLogout }) {
         <div className="stats-container">
           <div className="stats-card">
             <h2 className="stats-title">
-              Overview 
+              Today's Overview 
             </h2>
             <div className="stats-grid">
               <div className="stat-card stat-card-pink">
