@@ -3,48 +3,121 @@
 
 export async function generateShareableCard(cardElement, habit) {
   try {
+    console.log('generateShareableCard called with element:', cardElement);
+    
     // Dynamic import to avoid issues if html2canvas isn't installed
     const html2canvas = (await import('html2canvas')).default;
+    console.log('html2canvas imported successfully');
     
+    // Get element dimensions
+    const width = cardElement.offsetWidth || cardElement.scrollWidth || 500;
+    const height = cardElement.offsetHeight || cardElement.scrollHeight || 300;
+    
+    console.log('Element dimensions:', { width, height });
+
+    // Ensure element is visible for html2canvas
+    const originalStyle = {
+      position: cardElement.style.position,
+      left: cardElement.style.left,
+      top: cardElement.style.top,
+      opacity: cardElement.style.opacity,
+      visibility: cardElement.style.visibility,
+      zIndex: cardElement.style.zIndex,
+      display: cardElement.style.display,
+    };
+
+    // Temporarily make element visible for capture if needed
+    const needsVisibilityFix = cardElement.offsetWidth === 0 || 
+                               cardElement.offsetHeight === 0 ||
+                               cardElement.style.visibility === 'hidden' ||
+                               cardElement.style.opacity === '0';
+    
+    if (needsVisibilityFix) {
+      console.log('Making element visible for capture');
+      cardElement.style.position = 'fixed';
+      cardElement.style.left = '0px';
+      cardElement.style.top = '0px';
+      cardElement.style.opacity = '1';
+      cardElement.style.visibility = 'visible';
+      cardElement.style.zIndex = '9999';
+      cardElement.style.display = 'block';
+      
+      // Wait a bit for styles to apply
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    console.log('Calling html2canvas with options:', {
+      width,
+      height,
+      scale: 2, // Reduced from 3 for better compatibility
+      backgroundColor: null,
+      useCORS: true,
+      allowTaint: true,
+    });
+
     const canvas = await html2canvas(cardElement, {
-      backgroundColor: '#ffffff',
-      scale: 2, // Higher quality
-      logging: false,
-      useCORS: true
+      backgroundColor: null, // Transparent background to preserve card design
+      scale: 2, // Reduced scale for better compatibility
+      logging: true, // Enable logging to debug
+      useCORS: true,
+      allowTaint: true,
+      width: width,
+      height: height,
+      windowWidth: width,
+      windowHeight: height,
+      onclone: (clonedDoc) => {
+        console.log('html2canvas onclone called');
+        // Ensure cloned element is visible
+        const clonedElement = clonedDoc.querySelector('.punch-card-preview-container') || 
+                             clonedDoc.body.firstElementChild;
+        if (clonedElement) {
+          clonedElement.style.visibility = 'visible';
+          clonedElement.style.opacity = '1';
+        }
+      }
+    });
+
+    console.log('Canvas created:', { width: canvas.width, height: canvas.height });
+
+    // Restore original styles
+    Object.keys(originalStyle).forEach(key => {
+      if (originalStyle[key] !== undefined && originalStyle[key] !== '') {
+        cardElement.style[key] = originalStyle[key];
+      } else {
+        cardElement.style.removeProperty(key);
+      }
     });
 
     // Convert to blob
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {
-        resolve(blob);
-      }, 'image/png');
+        if (blob) {
+          console.log('Blob created, size:', blob.size);
+          resolve(blob);
+        } else {
+          console.error('Failed to create blob from canvas');
+          reject(new Error('Failed to create blob from canvas'));
+        }
+      }, 'image/png', 1.0); // Maximum quality
     });
   } catch (error) {
     console.error('Error generating shareable card:', error);
-    // Fallback: open share dialog with text
-    if (navigator.share) {
-      navigator.share({
-        title: `My ${habit.title} Progress`,
-        text: `I've completed ${habit.currentPunches}/${habit.targetPunches} punches! ${habit.reward ? `Reward: ${habit.reward}` : ''}`,
-      });
-    } else {
-      // Copy to clipboard as fallback
-      const text = `My ${habit.title} Progress: ${habit.currentPunches}/${habit.targetPunches} punches! ${habit.reward ? `Reward: ${habit.reward}` : ''}`;
-      navigator.clipboard.writeText(text).then(() => {
-        alert('Progress copied to clipboard!');
-      });
-    }
-    return null;
+    console.error('Error stack:', error.stack);
+    throw error; // Re-throw to let caller handle it
   }
 }
 
-export function downloadCard(blob, habitTitle) {
+export function downloadCard(blob, habitTitle, suffix = 'progress') {
   if (!blob) return;
   
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `${habitTitle.replace(/\s+/g, '-')}-progress.png`;
+  // If habitTitle already ends with .png, use it as-is, otherwise add suffix
+  const filename = habitTitle.endsWith('.png') 
+    ? habitTitle 
+    : `${habitTitle.replace(/\s+/g, '-')}-${suffix}.png`;
+  link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

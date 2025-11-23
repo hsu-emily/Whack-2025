@@ -1,15 +1,15 @@
 // src/pages/Dashboard.jsx
 import { signOut } from 'firebase/auth';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, LogOut, Plus, Sparkles, BookOpen } from 'lucide-react';
+import { BookOpen, ChevronLeft, ChevronRight, LogOut, Plus, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CardZoomModal from '../components/CardZoomModal';
 import CreateHabitModal from '../components/CreateHabitModal';
 import HabitCard from '../components/HabitCard';
+import JournalModal from '../components/JournalModal';
 import Layout from '../components/Layout';
 import ReflectionModal from '../components/ReflectionModal';
-import JournalModal from '../components/JournalModal';
 import { auth } from '../firebase';
 import { useHabitStore } from '../store/habitStore';
 
@@ -60,13 +60,7 @@ export default function Dashboard({ user, onLogout }) {
   };
 
   const handlePunch = async (habitId) => {
-    const isComplete = await punchHabit(habitId);
-    if (isComplete) {
-      const habit = habits.find(h => h.id === habitId);
-      setTimeout(() => {
-        alert(`🎉 Reward Unlocked!\n\n${habit.reward}`);
-      }, 300);
-    }
+    await punchHabit(habitId);
   };
 
   // Filter out completed habits for carousel

@@ -1,13 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { Download, LayoutDashboard, MousePointer2, QrCode, Settings, Share2, Trash2, Undo2, X } from 'lucide-react';
+import { LayoutDashboard, MousePointer2, Settings, Trash2, Undo2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import confetti from 'canvas-confetti';
 import holePunchCursor from '../assets/cursors/holePunch.png';
 import holePunchClickCursor from '../assets/cursors/holePunchClick.png';
 import { useHabitStore } from '../store/habitStore';
 import { getCardLayout } from '../utils/cardLayouts';
-import { downloadCard, generateShareableCard, shareCard } from '../utils/shareCard';
 import PunchCardPreview from './PunchCardPreview';
 
 // Load punch card PNGs
@@ -36,9 +34,7 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
   const [showSettings, setShowSettings] = useState(false);
   const [justPunched, setJustPunched] = useState(false);
   const [clickEnabled, setClickEnabled] = useState(true);
-  const [showCelebration, setShowCelebration] = useState(false);
   const [confettiTriggered, setConfettiTriggered] = useState(false);
-  const celebrationCardRef = useRef(null);
 
   // Get punch card image and layout
   const punchCardImage = punchCardMap[habit.punchCardImage] || Object.values(punchCardMap)[0] || null;
@@ -53,6 +49,19 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
     filledPunches: habit.currentPunches,
     totalPunches: habit.targetPunches
   };
+
+  // Check if habit is complete
+  const isComplete = habit.currentPunches >= habit.targetPunches;
+
+  // Navigate to celebration page when habit becomes complete
+  useEffect(() => {
+    if (isComplete && !confettiTriggered) {
+      setConfettiTriggered(true);
+      // Navigate to celebration page with habit data
+      navigate('/celebration', { state: { habit } });
+      onClose(); // Close the modal
+    }
+  }, [isComplete, confettiTriggered, habit, navigate, onClose]);
 
 
 
@@ -173,6 +182,7 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
     setClickEnabled(!clickEnabled);
     setShowSettings(false);
   };
+
 
   return (
     <AnimatePresence>
@@ -332,6 +342,7 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
               />
             </div>
           )}
+
         </motion.div>
       </motion.div>
     </AnimatePresence>

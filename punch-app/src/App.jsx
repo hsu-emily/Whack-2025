@@ -7,11 +7,13 @@ import { useHabitStore } from './store/habitStore';
 import CustomCursor from './components/CustomCursor';
 import About from './pages/About';
 import CardLayoutEditor from './pages/CardLayoutEditor';
+import CelebrationPage from './pages/CelebrationPage';
 import CreatePunchPass from './pages/CreatePunchPass';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import TestCelebration from './pages/TestCelebration';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -80,6 +82,14 @@ function App() {
         <Route 
           path="/card-layout-editor" 
           element={<CardLayoutEditor />} 
+        />
+        <Route 
+          path="/test-celebration" 
+          element={<TestCelebration />} 
+        />
+        <Route 
+          path="/celebration" 
+          element={<CelebrationPage />} 
         />
       </Routes>
     </Router>
