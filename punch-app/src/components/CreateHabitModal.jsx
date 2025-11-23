@@ -1,5 +1,5 @@
 import { Loader2, Sparkles, Wand2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { generateRewardIdeas, transformGoalToHabits } from '../services/geminiService';
 import { useHabitStore } from '../store/habitStore';
 import FramerCarousel from './FramerCarousel';
@@ -54,6 +54,7 @@ const defaultLayouts = {
 
 export default function CreateHabitModal({ userId, onClose }) {
   const addHabit = useHabitStore(state => state.addHabit);
+  const habits = useHabitStore(state => state.habits);
   const [mode, setMode] = useState('habit'); // 'habit' or 'goal'
   const [goalText, setGoalText] = useState('');
   const [generatingHabits, setGeneratingHabits] = useState(false);
@@ -64,25 +65,44 @@ export default function CreateHabitModal({ userId, onClose }) {
   const [selectedIcon1, setSelectedIcon1] = useState(iconOptions[0]?.filename || '');
   const [selectedIcon2, setSelectedIcon2] = useState(iconOptions[1]?.filename || '');
   
+  // Filter out cards used by completed habits
+  const completedCardFilenames = new Set(
+    habits
+      .filter(h => h.currentPunches >= h.targetPunches && h.punchCardImage)
+      .map(h => h.punchCardImage)
+  );
+  
+  const availableCards = punchCardOptions.filter(
+    card => !completedCardFilenames.has(card.filename)
+  );
+  
   const [habit, setHabit] = useState({
     title: '',
     description: '',
     targetPunches: 10,
     reward: '',
     timeWindow: 'daily',
-    punchCardImage: punchCardOptions[0]?.filename || '',
+    punchCardImage: availableCards[0]?.filename || '',
     icon1: iconOptions[0]?.filename || '',
     icon2: iconOptions[1]?.filename || ''
   });
 
-  // Get selected punch card
-  const selectedCard = punchCardOptions[selectedCardIndex] || punchCardOptions[0];
+  // Adjust selectedCardIndex if it's out of bounds after filtering
+  useEffect(() => {
+    if (availableCards.length > 0 && selectedCardIndex >= availableCards.length) {
+      setSelectedCardIndex(0);
+      setHabit(prev => ({ ...prev, punchCardImage: availableCards[0]?.filename || '' }));
+    }
+  }, [availableCards.length, selectedCardIndex]);
+
+  // Get selected punch card from available cards
+  const selectedCard = availableCards[selectedCardIndex] || availableCards[0];
   const selectedCardLayout = defaultLayouts[selectedCard?.filename] || defaultLayouts['WindowsGreen.png'];
 
   // Update habit when card selection changes
   const handleCardSelect = (index) => {
     setSelectedCardIndex(index);
-    setHabit({ ...habit, punchCardImage: punchCardOptions[index]?.filename || '' });
+    setHabit({ ...habit, punchCardImage: availableCards[index]?.filename || '' });
   };
 
   const handleTransformGoal = async () => {
@@ -398,7 +418,7 @@ export default function CreateHabitModal({ userId, onClose }) {
                 <label className="block text-sm font-medium mb-3">Choose Punch Card Design</label>
                 <div className="bg-gray-50 rounded-xl p-4">
                   <FramerCarousel 
-                    punchCards={punchCardOptions}
+                    punchCards={availableCards}
                     activeIndex={selectedCardIndex}
                     onCardSelect={handleCardSelect}
                   />

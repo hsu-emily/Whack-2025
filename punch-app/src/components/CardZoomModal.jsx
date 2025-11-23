@@ -264,6 +264,15 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
             className="card-zoom-card"
             onClick={handleCardClick}
             style={{ cursor: 'none' }}
+            role="button"
+            aria-label="Click to punch hole"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleCardClick(e);
+              }
+            }}
           >
             {punchCardImage ? (
               <PunchCardPreview

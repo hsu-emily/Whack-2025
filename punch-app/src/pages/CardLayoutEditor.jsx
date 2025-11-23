@@ -1,4 +1,4 @@
-import { Copy } from 'lucide-react';
+import { Check, Copy, Download, Upload } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PunchCardPreview from '../components/PunchCardPreview';
 
@@ -259,45 +259,202 @@ export default function CardLayoutEditor() {
     }, null, 2);
   }, [layoutMedium, layoutLarge, numRows, punchesPerRow]);
 
+  const [copiedType, setCopiedType] = useState(null);
+  const [importError, setImportError] = useState('');
+  const [importText, setImportText] = useState('');
+
   const copyToClipboard = () => {
     navigator.clipboard.writeText(jsonOutput);
-    alert('Copied to clipboard!');
+    setCopiedType('json');
+    setTimeout(() => setCopiedType(null), 2000);
   };
 
   const copyAsCode = () => {
-    const code = `'${selectedCard}': {
+    const code = `  '${selectedCard}': {
     title: { 
-      topMedium: '${titleTopMedium}', topLarge: '${titleTopLarge}',
-      leftMedium: '${titleLeftMedium}', leftLarge: '${titleLeftLarge}',
+      topMedium: '${titleTopMedium}', 
+      topLarge: '${titleTopLarge}',
+      leftMedium: '${titleLeftMedium}', 
+      leftLarge: '${titleLeftLarge}',
       textAlign: '${titleTextAlignMedium}', 
-      colorMedium: '${titleColorMedium}', colorLarge: '${titleColorLarge}',
-      fontSizeMedium: '${titleFontSizeMedium}', fontSizeLarge: '${titleFontSizeLarge}',
-      fontFamilyMedium: '${titleFontFamilyMedium}', fontFamilyLarge: '${titleFontFamilyLarge}',
+      colorMedium: '${titleColorMedium}', 
+      colorLarge: '${titleColorLarge}',
+      fontSizeMedium: '${titleFontSizeMedium}', 
+      fontSizeLarge: '${titleFontSizeLarge}',
+      fontFamilyMedium: '${titleFontFamilyMedium}', 
+      fontFamilyLarge: '${titleFontFamilyLarge}',
       fontWeight: 'bold',
-      widthMedium: '${titleWidthMedium}', widthLarge: '${titleWidthLarge}'
+      widthMedium: '${titleWidthMedium}', 
+      widthLarge: '${titleWidthLarge}'
     },
     description: { 
-      topMedium: '${descTopMedium}', topLarge: '${descTopLarge}',
-      leftMedium: '${descLeftMedium}', leftLarge: '${descLeftLarge}',
+      topMedium: '${descTopMedium}', 
+      topLarge: '${descTopLarge}',
+      leftMedium: '${descLeftMedium}', 
+      leftLarge: '${descLeftLarge}',
       textAlign: '${descTextAlignMedium}',
-      colorMedium: '${descColorMedium}', colorLarge: '${descColorLarge}',
-      fontSizeMedium: '${descFontSizeMedium}', fontSizeLarge: '${descFontSizeLarge}',
-      fontFamilyMedium: '${descFontFamilyMedium}', fontFamilyLarge: '${descFontFamilyLarge}',
-      widthMedium: '${descWidthMedium}', widthLarge: '${descWidthLarge}'
+      colorMedium: '${descColorMedium}', 
+      colorLarge: '${descColorLarge}',
+      fontSizeMedium: '${descFontSizeMedium}', 
+      fontSizeLarge: '${descFontSizeLarge}',
+      fontFamilyMedium: '${descFontFamilyMedium}', 
+      fontFamilyLarge: '${descFontFamilyLarge}',
+      widthMedium: '${descWidthMedium}', 
+      widthLarge: '${descWidthLarge}'
     },
     punchGrid: { 
-      topMedium: '${gridTopMedium}', topLarge: '${gridTopLarge}',
-      leftMedium: '${gridLeftMedium}', leftLarge: '${gridLeftLarge}',
+      topMedium: '${gridTopMedium}', 
+      topLarge: '${gridTopLarge}',
+      leftMedium: '${gridLeftMedium}', 
+      leftLarge: '${gridLeftLarge}',
       transform: '${gridTransformMedium}',
-      punchCircleSizeMedium: '${punchCircleSizeMedium}', punchCircleSizeLarge: '${punchCircleSizeLarge}',
-      punchIconSizeMedium: '${punchIconSizeMedium}', punchIconSizeLarge: '${punchIconSizeLarge}',
-      punchHorizontalGapMedium: '${punchHorizontalGapMedium}', punchHorizontalGapLarge: '${punchHorizontalGapLarge}',
-      punchVerticalGapMedium: '${punchVerticalGapMedium}', punchVerticalGapLarge: '${punchVerticalGapLarge}',
-      numRows: ${numRows}, punchesPerRow: ${punchesPerRow}
+      punchCircleSizeMedium: '${punchCircleSizeMedium}', 
+      punchCircleSizeLarge: '${punchCircleSizeLarge}',
+      punchIconSizeMedium: '${punchIconSizeMedium}', 
+      punchIconSizeLarge: '${punchIconSizeLarge}',
+      punchHorizontalGapMedium: '${punchHorizontalGapMedium}', 
+      punchHorizontalGapLarge: '${punchHorizontalGapLarge}',
+      punchVerticalGapMedium: '${punchVerticalGapMedium}', 
+      punchVerticalGapLarge: '${punchVerticalGapLarge}',
+      numRows: ${numRows}, 
+      punchesPerRow: ${punchesPerRow}
     }
   }`;
     navigator.clipboard.writeText(code);
-    alert('Code copied to clipboard!');
+    setCopiedType('code');
+    setTimeout(() => setCopiedType(null), 2000);
+  };
+
+  const copyAsFullEntry = () => {
+    const code = `'${selectedCard}': {
+    ...baseLayout,
+    title: { 
+      ...baseLayout.title, 
+      topMedium: '${titleTopMedium}', 
+      topLarge: '${titleTopLarge}',
+      leftMedium: '${titleLeftMedium}', 
+      leftLarge: '${titleLeftLarge}',
+      textAlign: '${titleTextAlignMedium}', 
+      colorMedium: '${titleColorMedium}', 
+      colorLarge: '${titleColorLarge}',
+      fontSizeMedium: '${titleFontSizeMedium}', 
+      fontSizeLarge: '${titleFontSizeLarge}',
+      fontFamilyMedium: '${titleFontFamilyMedium}', 
+      fontFamilyLarge: '${titleFontFamilyLarge}',
+      fontWeight: 'bold',
+      widthMedium: '${titleWidthMedium}', 
+      widthLarge: '${titleWidthLarge}'
+    },
+    description: { 
+      ...baseLayout.description,
+      topMedium: '${descTopMedium}', 
+      topLarge: '${descTopLarge}',
+      leftMedium: '${descLeftMedium}', 
+      leftLarge: '${descLeftLarge}',
+      textAlign: '${descTextAlignMedium}',
+      colorMedium: '${descColorMedium}', 
+      colorLarge: '${descColorLarge}',
+      fontSizeMedium: '${descFontSizeMedium}', 
+      fontSizeLarge: '${descFontSizeLarge}',
+      fontFamilyMedium: '${descFontFamilyMedium}', 
+      fontFamilyLarge: '${descFontFamilyLarge}',
+      widthMedium: '${descWidthMedium}', 
+      widthLarge: '${descWidthLarge}'
+    },
+    punchGrid: { 
+      ...baseLayout.punchGrid,
+      topMedium: '${gridTopMedium}', 
+      topLarge: '${gridTopLarge}',
+      leftMedium: '${gridLeftMedium}', 
+      leftLarge: '${gridLeftLarge}',
+      transform: '${gridTransformMedium}',
+      punchCircleSizeMedium: '${punchCircleSizeMedium}', 
+      punchCircleSizeLarge: '${punchCircleSizeLarge}',
+      punchIconSizeMedium: '${punchIconSizeMedium}', 
+      punchIconSizeLarge: '${punchIconSizeLarge}',
+      punchHorizontalGapMedium: '${punchHorizontalGapMedium}', 
+      punchHorizontalGapLarge: '${punchHorizontalGapLarge}',
+      punchVerticalGapMedium: '${punchVerticalGapMedium}', 
+      punchVerticalGapLarge: '${punchVerticalGapLarge}',
+      numRows: ${numRows}, 
+      punchesPerRow: ${punchesPerRow}
+    }
+  }`;
+    navigator.clipboard.writeText(code);
+    setCopiedType('full');
+    setTimeout(() => setCopiedType(null), 2000);
+  };
+
+  const handleImport = (text) => {
+    try {
+      const parsed = JSON.parse(text);
+      
+      // Try to extract values from the parsed JSON
+      if (parsed.title) {
+        if (parsed.title.topMedium) setTitleTopMedium(parsed.title.topMedium);
+        if (parsed.title.topLarge) setTitleTopLarge(parsed.title.topLarge);
+        if (parsed.title.leftMedium) setTitleLeftMedium(parsed.title.leftMedium);
+        if (parsed.title.leftLarge) setTitleLeftLarge(parsed.title.leftLarge);
+        if (parsed.title.textAlign) {
+          setTitleTextAlignMedium(parsed.title.textAlign);
+          setTitleTextAlignLarge(parsed.title.textAlign);
+        }
+        if (parsed.title.colorMedium) setTitleColorMedium(parsed.title.colorMedium);
+        if (parsed.title.colorLarge) setTitleColorLarge(parsed.title.colorLarge);
+        if (parsed.title.fontSizeMedium) setTitleFontSizeMedium(parsed.title.fontSizeMedium);
+        if (parsed.title.fontSizeLarge) setTitleFontSizeLarge(parsed.title.fontSizeLarge);
+        if (parsed.title.fontFamilyMedium) setTitleFontFamilyMedium(parsed.title.fontFamilyMedium);
+        if (parsed.title.fontFamilyLarge) setTitleFontFamilyLarge(parsed.title.fontFamilyLarge);
+        if (parsed.title.widthMedium) setTitleWidthMedium(parsed.title.widthMedium);
+        if (parsed.title.widthLarge) setTitleWidthLarge(parsed.title.widthLarge);
+      }
+      
+      if (parsed.description) {
+        if (parsed.description.topMedium) setDescTopMedium(parsed.description.topMedium);
+        if (parsed.description.topLarge) setDescTopLarge(parsed.description.topLarge);
+        if (parsed.description.leftMedium) setDescLeftMedium(parsed.description.leftMedium);
+        if (parsed.description.leftLarge) setDescLeftLarge(parsed.description.leftLarge);
+        if (parsed.description.textAlign) {
+          setDescTextAlignMedium(parsed.description.textAlign);
+          setDescTextAlignLarge(parsed.description.textAlign);
+        }
+        if (parsed.description.colorMedium) setDescColorMedium(parsed.description.colorMedium);
+        if (parsed.description.colorLarge) setDescColorLarge(parsed.description.colorLarge);
+        if (parsed.description.fontSizeMedium) setDescFontSizeMedium(parsed.description.fontSizeMedium);
+        if (parsed.description.fontSizeLarge) setDescFontSizeLarge(parsed.description.fontSizeLarge);
+        if (parsed.description.fontFamilyMedium) setDescFontFamilyMedium(parsed.description.fontFamilyMedium);
+        if (parsed.description.fontFamilyLarge) setDescFontFamilyLarge(parsed.description.fontFamilyLarge);
+        if (parsed.description.widthMedium) setDescWidthMedium(parsed.description.widthMedium);
+        if (parsed.description.widthLarge) setDescWidthLarge(parsed.description.widthLarge);
+      }
+      
+      if (parsed.punchGrid) {
+        if (parsed.punchGrid.topMedium) setGridTopMedium(parsed.punchGrid.topMedium);
+        if (parsed.punchGrid.topLarge) setGridTopLarge(parsed.punchGrid.topLarge);
+        if (parsed.punchGrid.leftMedium) setGridLeftMedium(parsed.punchGrid.leftMedium);
+        if (parsed.punchGrid.leftLarge) setGridLeftLarge(parsed.punchGrid.leftLarge);
+        if (parsed.punchGrid.transform) {
+          setGridTransformMedium(parsed.punchGrid.transform);
+          setGridTransformLarge(parsed.punchGrid.transform);
+        }
+        if (parsed.punchGrid.punchCircleSizeMedium) setPunchCircleSizeMedium(parsed.punchGrid.punchCircleSizeMedium);
+        if (parsed.punchGrid.punchCircleSizeLarge) setPunchCircleSizeLarge(parsed.punchGrid.punchCircleSizeLarge);
+        if (parsed.punchGrid.punchIconSizeMedium) setPunchIconSizeMedium(parsed.punchGrid.punchIconSizeMedium);
+        if (parsed.punchGrid.punchIconSizeLarge) setPunchIconSizeLarge(parsed.punchGrid.punchIconSizeLarge);
+        if (parsed.punchGrid.punchHorizontalGapMedium) setPunchHorizontalGapMedium(parsed.punchGrid.punchHorizontalGapMedium);
+        if (parsed.punchGrid.punchHorizontalGapLarge) setPunchHorizontalGapLarge(parsed.punchGrid.punchHorizontalGapLarge);
+        if (parsed.punchGrid.punchVerticalGapMedium) setPunchVerticalGapMedium(parsed.punchGrid.punchVerticalGapMedium);
+        if (parsed.punchGrid.punchVerticalGapLarge) setPunchVerticalGapLarge(parsed.punchGrid.punchVerticalGapLarge);
+        if (parsed.punchGrid.numRows) setNumRows(parsed.punchGrid.numRows);
+        if (parsed.punchGrid.punchesPerRow) setPunchesPerRow(parsed.punchGrid.punchesPerRow);
+      }
+      
+      setImportError('');
+      alert('Layout imported successfully!');
+    } catch (error) {
+      setImportError('Invalid JSON format. Please check your input.');
+      console.error('Import error:', error);
+    }
   };
 
   const icon1 = selectedIcon1 ? iconMap[selectedIcon1] : null;
@@ -782,28 +939,108 @@ export default function CardLayoutEditor() {
             </div>
 
             {/* Output Section */}
-            <div className="mb-4">
-              <div className="flex gap-2 mb-2">
+            <div className="mb-4 border-t pt-4">
+              <h3 className="text-lg font-bold mb-3 text-gray-800">Export & Import</h3>
+              
+              {/* Copy Buttons */}
+              <div className="flex flex-wrap gap-2 mb-4">
                 <button
                   onClick={copyToClipboard}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all shadow-sm ${
+                    copiedType === 'json' 
+                      ? 'bg-green-600 text-white shadow-md' 
+                      : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-md'
+                  }`}
                 >
-                  <Copy size={16} />
-                  Copy JSON
+                  {copiedType === 'json' ? <Check size={16} /> : <Copy size={16} />}
+                  {copiedType === 'json' ? 'Copied!' : 'Copy JSON'}
                 </button>
                 <button
                   onClick={copyAsCode}
-                  className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all shadow-sm ${
+                    copiedType === 'code' 
+                      ? 'bg-green-600 text-white shadow-md' 
+                      : 'bg-pink-600 text-white hover:bg-pink-700 hover:shadow-md'
+                  }`}
                 >
-                  <Copy size={16} />
-                  Copy Code
+                  {copiedType === 'code' ? <Check size={16} /> : <Copy size={16} />}
+                  {copiedType === 'code' ? 'Copied!' : 'Copy Code'}
+                </button>
+                <button
+                  onClick={copyAsFullEntry}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all shadow-sm ${
+                    copiedType === 'full' 
+                      ? 'bg-green-600 text-white shadow-md' 
+                      : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md'
+                  }`}
+                >
+                  {copiedType === 'full' ? <Check size={16} /> : <Copy size={16} />}
+                  {copiedType === 'full' ? 'Copied!' : 'Copy Full Entry'}
                 </button>
               </div>
-              <textarea
-                value={jsonOutput}
-                readOnly
-                className="w-full p-2 border rounded text-xs font-mono h-40"
-              />
+              
+              {/* Import Section */}
+              <div className="mb-4 p-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-dashed border-gray-300">
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  <Upload size={16} className="inline mr-1" />
+                  Import Layout (Paste JSON here)
+                </label>
+                <textarea
+                  value={importText}
+                  onChange={(e) => {
+                    setImportText(e.target.value);
+                    setImportError('');
+                  }}
+                  placeholder='Paste JSON layout here, e.g.: {"title": {"topMedium": "4%", ...}}'
+                  className="w-full p-2 border-2 border-gray-300 rounded text-xs font-mono h-24 mb-2 focus:border-blue-500 focus:outline-none bg-white"
+                />
+                <button
+                  onClick={() => {
+                    if (importText.trim()) {
+                      handleImport(importText);
+                    } else {
+                      setImportError('Please paste JSON data first');
+                    }
+                  }}
+                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 text-sm font-medium shadow-sm transition-all"
+                >
+                  Import Layout
+                </button>
+                {importError && (
+                  <div className="mt-2 text-xs text-red-700 bg-red-50 p-2 rounded border border-red-200">
+                    ⚠️ {importError}
+                  </div>
+                )}
+              </div>
+              
+              {/* Output Textarea */}
+              <div className="relative">
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  <Download size={16} className="inline mr-1" />
+                  Layout Output (Click to select all, then copy)
+                </label>
+                <textarea
+                  value={jsonOutput}
+                  readOnly
+                  onClick={(e) => e.target.select()}
+                  className="w-full p-4 border-2 border-gray-300 rounded-lg text-sm font-mono h-80 bg-white focus:border-purple-500 focus:outline-none shadow-inner"
+                  style={{ resize: 'vertical', minHeight: '320px' }}
+                />
+                <div className="absolute top-12 right-4 text-xs text-gray-400 bg-white/80 px-2 py-1 rounded">
+                  {jsonOutput.length} chars
+                </div>
+              </div>
+              
+              {/* Instructions */}
+              <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-xs text-blue-800 font-medium mb-1">💡 How to use:</p>
+                <ol className="text-xs text-blue-700 list-decimal list-inside space-y-1">
+                  <li>Adjust the layout controls above</li>
+                  <li>Click "Copy Code" or "Copy Full Entry" to get the format for cardLayouts.js</li>
+                  <li>Paste the output into your cardLayouts.js file</li>
+                  <li>Or use "Import Layout" to load existing JSON layouts</li>
+                </ol>
+              </div>
             </div>
           </div>
         </div>

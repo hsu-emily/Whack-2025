@@ -12,6 +12,15 @@ import ReflectionModal from '../components/ReflectionModal';
 import { auth } from '../firebase';
 import { useHabitStore } from '../store/habitStore';
 
+// Load bunny icon
+const iconModules = import.meta.glob('../assets/icons/*.png', { eager: true });
+const iconMap = {};
+for (const path in iconModules) {
+  const filename = path.split('/').pop();
+  iconMap[filename] = iconModules[path].default;
+}
+const bunnyIcon = iconMap['bunny.png'] || null;
+
 export default function Dashboard({ user, onLogout }) {
   const navigate = useNavigate();
   const habits = useHabitStore(state => state.habits);
@@ -28,15 +37,6 @@ export default function Dashboard({ user, onLogout }) {
       fetchHabits(user.uid);
     }
   }, [user, fetchHabits]);
-
-  // Reset active index if it's out of bounds
-  useEffect(() => {
-    if (habits.length > 0 && activeIndex >= habits.length) {
-      setActiveIndex(habits.length - 1);
-    } else if (habits.length === 0) {
-      setActiveIndex(0);
-    }
-  }, [habits.length, activeIndex]);
 
   // Sync zoomedHabit when habits update
   useEffect(() => {
@@ -62,54 +62,225 @@ export default function Dashboard({ user, onLogout }) {
     if (isComplete) {
       const habit = habits.find(h => h.id === habitId);
       setTimeout(() => {
-        alert(`🎉 Reward Unlocked!\n\n${habit.reward}`);
+        alert(` Reward Unlocked!\n\n${habit.reward}`);
       }, 300);
     }
   };
 
+  // Filter out completed habits for carousel
+  const uncompletedHabits = habits.filter(h => h.currentPunches < h.targetPunches);
+  
   // Calculate stats
   const todayHabits = habits.filter(h => h.currentPunches < h.targetPunches).length;
   const totalPunches = habits.reduce((acc, h) => acc + h.currentPunches, 0);
   const completedHabits = habits.filter(h => h.currentPunches === h.targetPunches).length;
 
+  // Reset active index when uncompleted habits change
+  useEffect(() => {
+    const uncompletedCount = habits.filter(h => h.currentPunches < h.targetPunches).length;
+    if (uncompletedCount > 0 && activeIndex >= uncompletedCount) {
+      setActiveIndex(Math.max(0, uncompletedCount - 1));
+    } else if (uncompletedCount === 0) {
+      setActiveIndex(0);
+    }
+  }, [habits, activeIndex]);
+
   return (
     <Layout>
       <div className="dashboard-container">
         {/* Header */}
-        <header className="dashboard-header">
-          <div className="dashboard-header-content">
-            <div className="dashboard-header-left">
-              <span className="dashboard-title">
-                Punchie
-              </span>
-              
-            </div>
-
-            <div className="dashboard-header-right">
+        <header className="dashboard-header-new">
+          <h1 className="dashboard-title-new">
+            {user?.displayName?.split(' ')[0] || 'Friend'}'s Habits.
+          </h1>
+          
+          <div className="dashboard-header-right-new">
+            <button
+              onClick={() => setShowReflection(true)}
+              className="btn-reflection-new"
+            >
+              <Sparkles size={18} />
+              <span className="btn-reflection-text">Reflection</span>
+            </button>
+            {bunnyIcon && (
               <button
-                onClick={() => setShowReflection(true)}
-                className="btn-reflection"
+                onClick={() => {
+                  // Add bunny click handler here if needed
+                  console.log('Bunny clicked!');
+                }}
+                className="btn-bunny"
+                title="Bunny"
+                aria-label="Bunny"
               >
-                <Sparkles size={18} />
-                <span className="btn-reflection-text">Reflection</span>
+                <img 
+                  src={bunnyIcon} 
+                  alt="Bunny" 
+                  style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                />
               </button>
-              <button
-                onClick={handleLogout}
-                className="btn-logout"
-                title="Logout"
-              >
-                <LogOut size={20} />
-              </button>
-            </div>
+            )}
+            <button
+              onClick={handleLogout}
+              className="btn-logout-new"
+              title="Logout"
+            >
+              <LogOut size={20} />
+            </button>
           </div>
         </header>
-        
-        <div className="habits-header">
-          <span className="dashboard-welcome">
-            Welcome, {user?.displayName?.split(' ')[0] || 'Friend'}! 
-          </span>
-        </div>
 
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="btn-new-habit"
+        >
+          <Plus size={20} />
+          <span>New Habit</span>
+        </button>
+
+        {uncompletedHabits.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-emoji">🐰</div>
+              <h3 className="empty-state-title">No habits right now</h3>
+              <p className="empty-state-text">Create your first punch card to start your journey ✨</p>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="btn-create-first"
+              >
+                Create Your First Habit
+              </button>
+            </div>
+          ) : (
+            <div className="habits-carousel-container">
+              <div className="habits-carousel-wrapper">
+                {/* Left Navigation - only show if 3+ cards */}
+                {uncompletedHabits.length >= 3 && (
+                  <button
+                    onClick={() => {
+                      const newIndex = (activeIndex - 1 + uncompletedHabits.length) % uncompletedHabits.length;
+                      setActiveIndex(newIndex);
+                    }}
+                    className="carousel-nav-btn carousel-nav-left"
+                    aria-label="Previous habit"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                )}
+
+                {/* Carousel Cards */}
+                <div className="habits-carousel">
+                  {uncompletedHabits.map((habit, index) => {
+                    // Calculate offset from active index, handling wrap-around for infinite scroll
+                    let offset = index - activeIndex;
+                    
+                    // Normalize offset for infinite scroll (shortest path)
+                    if (Math.abs(offset) > uncompletedHabits.length / 2) {
+                      offset = offset > 0 
+                        ? offset - uncompletedHabits.length 
+                        : offset + uncompletedHabits.length;
+                    }
+                    
+                    // Determine styling based on offset
+                    let scale = 0.85;
+                    let opacity = 0.3;
+                    let zIndex = 10;
+                    
+                    if (offset === 0) {
+                      // Center card
+                      scale = 1.05;
+                      opacity = 1;
+                      zIndex = 20;
+                    } else if (Math.abs(offset) === 1) {
+                      // Adjacent cards (left and right)
+                      scale = 0.85;
+                      opacity = 0.7;
+                      zIndex = 15;
+                    } else if (Math.abs(offset) === 2) {
+                      // Further cards
+                      scale = 0.75;
+                      opacity = 0.5;
+                      zIndex = 12;
+                    } else {
+                      // Cards further away
+                      scale = 0.65;
+                      opacity = 0.3;
+                      zIndex = 5;
+                    }
+                    
+                    // Calculate x position in pixels for proper centering
+                    // We need to combine -50% (to center from left: 50%) with the pixel offset
+                    // Center card at 0, left card at -120px, right card at +120px
+                    const xPosition = offset * 140; // pixels offset from center (increased for bigger cards)
+                    // Use Framer Motion's x and y for smooth animation
+                    // x combines -50% centering with pixel offset, y is -45% to position higher above dots
+                    const isCenterCard = offset === 0;
+
+                    return (
+                      <motion.div
+                        key={habit.id}
+                        className={`carousel-card ${!isCenterCard ? 'disabled' : ''}`}
+                        style={{
+                          zIndex,
+                        }}
+                        initial={{
+                          x: `calc(-50% + ${xPosition}px)`,
+                          y: '-45%',
+                          scale,
+                          opacity,
+                        }}
+                        animate={{
+                          x: `calc(-50% + ${xPosition}px)`,
+                          y: '-45%',
+                          scale,
+                          opacity,
+                        }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 300,
+                          damping: 30,
+                        }}
+                        onClick={isCenterCard ? () => setZoomedHabit(habit) : undefined}
+                      >
+                        <HabitCard
+                          habit={habit}
+                          onPunch={() => handlePunch(habit.id)}
+                          hideControls={true}
+                          size="medium"
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Right Navigation - only show if 3+ cards */}
+                {uncompletedHabits.length >= 3 && (
+                  <button
+                    onClick={() => {
+                      const newIndex = (activeIndex + 1) % uncompletedHabits.length;
+                      setActiveIndex(newIndex);
+                    }}
+                    className="carousel-nav-btn carousel-nav-right"
+                    aria-label="Next habit"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                )}
+              </div>
+
+              {/* Carousel Indicators */}
+              {uncompletedHabits.length > 1 && (
+                <div className="carousel-indicators">
+                  {uncompletedHabits.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveIndex(index)}
+                      className={`carousel-indicator ${index === activeIndex ? 'active' : ''}`}
+                      aria-label={`Go to habit ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
         {/* Stats Overview */}
         <div className="stats-container">
@@ -133,106 +304,6 @@ export default function Dashboard({ user, onLogout }) {
             </div>
           </div>
         </div>
-
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="btn-new-habit"
-        >
-          <Plus size={20} />
-          <span>New Habit</span>
-        </button>
-
-        {habits.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-state-emoji">🐰</div>
-              <h3 className="empty-state-title">No habits right now</h3>
-              <p className="empty-state-text">Create your first punch card to start your journey ✨</p>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="btn-create-first"
-              >
-                Create Your First Habit
-              </button>
-            </div>
-          ) : (
-            <div className="habits-carousel-container">
-              <div className="habits-carousel-wrapper">
-                {/* Left Navigation */}
-                <button
-                  onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
-                  disabled={activeIndex === 0}
-                  className="carousel-nav-btn carousel-nav-left"
-                  aria-label="Previous habit"
-                >
-                  <ChevronLeft size={24} />
-                </button>
-
-                {/* Carousel Cards */}
-                <div className="habits-carousel">
-                  {habits.map((habit, index) => {
-                    const offset = index - activeIndex;
-                    const scale = index === activeIndex ? 1 : 0.85;
-                    const opacity = Math.abs(offset) <= 1 ? 1 - Math.abs(offset) * 0.3 : 0.3;
-                    const zIndex = habits.length - Math.abs(offset);
-                    // Calculate x position as percentage offset from center
-                    const xPosition = `${offset * 110}%`;
-
-                    return (
-                      <motion.div
-                        key={habit.id}
-                        className="carousel-card"
-                        style={{
-                          zIndex,
-                        }}
-                        animate={{
-                          scale,
-                          opacity,
-                          x: xPosition,
-                        }}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 300,
-                          damping: 30,
-                        }}
-                        onClick={() => setZoomedHabit(habit)}
-                      >
-                        <HabitCard
-                          habit={habit}
-                          onPunch={() => handlePunch(habit.id)}
-                          hideControls={true}
-                          size="medium"
-                        />
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {/* Right Navigation */}
-                <button
-                  onClick={() => setActiveIndex(Math.min(habits.length - 1, activeIndex + 1))}
-                  disabled={activeIndex === habits.length - 1}
-                  className="carousel-nav-btn carousel-nav-right"
-                  aria-label="Next habit"
-                >
-                  <ChevronRight size={24} />
-                </button>
-              </div>
-
-              {/* Carousel Indicators */}
-              {habits.length > 1 && (
-                <div className="carousel-indicators">
-                  {habits.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveIndex(index)}
-                      className={`carousel-indicator ${index === activeIndex ? 'active' : ''}`}
-                      aria-label={`Go to habit ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
       </div>
 
       {/* Modals */}

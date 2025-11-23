@@ -12,14 +12,14 @@ function FramerCarousel({ punchCards = [], activeIndex = 0, onCardSelect }) {
     return <div className="text-center text-gray-500">No punch cards available</div>;
   }
 
-  // Navigation
+  // Navigation - infinite carousel
   const goLeft = () => {
-    const newIndex = Math.max(0, activeIndex - 1);
+    const newIndex = (activeIndex - 1 + punchCards.length) % punchCards.length;
     if (onCardSelect) onCardSelect(newIndex);
   };
   
   const goRight = () => {
-    const newIndex = Math.min(punchCards.length - 1, activeIndex + 1);
+    const newIndex = (activeIndex + 1) % punchCards.length;
     if (onCardSelect) onCardSelect(newIndex);
   };
 
@@ -30,44 +30,78 @@ function FramerCarousel({ punchCards = [], activeIndex = 0, onCardSelect }) {
         className="relative flex items-center justify-center w-[340px] sm:w-[600px] mx-auto overflow-visible"
         style={{ minHeight: 280 }}
       >
-        {/* Left arrow */}
-        <button
-          onClick={goLeft}
-          disabled={activeIndex === 0}
-          className="absolute left-0 z-30 bg-white/80 rounded-full shadow px-2 py-1 text-2xl top-1/2 -translate-y-1/2"
-          style={{ pointerEvents: activeIndex === 0 ? 'none' : 'auto', opacity: activeIndex === 0 ? 0.3 : 1 }}
-        >
-          &#8592;
-        </button>
+        {/* Left arrow - only show if 3+ cards */}
+        {punchCards.length >= 3 && (
+          <button
+            onClick={goLeft}
+            className="absolute left-0 z-30 bg-white/80 rounded-full shadow px-2 py-1 text-2xl top-1/2 -translate-y-1/2 hover:bg-white transition-colors"
+          >
+            &#8592;
+          </button>
+        )}
         
         {/* Cards */}
-        <div className="flex items-center justify-center w-full overflow-visible">
+        <div className="relative flex items-center justify-center w-full overflow-visible" style={{ height: '280px' }}>
           {punchCards.map((item, idx) => {
-            // Determine position
-            let scale = 0.9, z = 10, opacity = 0.6, shadow = 'shadow';
-            if (idx === activeIndex) {
-              scale = 1.1;
+            // Calculate offset from active index, handling wrap-around for infinite scroll
+            let offset = idx - activeIndex;
+            
+            // Normalize offset for infinite scroll (shortest path)
+            if (punchCards.length > 0 && Math.abs(offset) > punchCards.length / 2) {
+              offset = offset > 0 
+                ? offset - punchCards.length 
+                : offset + punchCards.length;
+            }
+            
+            // Determine position and styling
+            let scale = 0.85, z = 10, opacity = 0.5, shadow = 'shadow', x = 0;
+            
+            if (offset === 0) {
+              // Active (center) card - bigger and centered
+              scale = 1.25;
               z = 20;
               opacity = 1;
               shadow = 'shadow-2xl';
-            } else if (Math.abs(idx - activeIndex) === 1) {
-              scale = 0.95;
+              x = 0;
+            } else if (Math.abs(offset) === 1) {
+              // Adjacent cards (left and right) - positioned symmetrically
+              scale = 0.9;
               z = 15;
-              opacity = 0.8;
+              opacity = 0.7;
               shadow = 'shadow-lg';
+              x = offset * 100; // Symmetric offset for proper centering
+            } else if (Math.abs(offset) === 2) {
+              // Further cards
+              scale = 0.85;
+              z = 10;
+              opacity = 0.5;
+              shadow = 'shadow';
+              x = offset * 80;
+            } else {
+              // Cards further away - hide or minimize
+              scale = 0.75;
+              z = 5;
+              opacity = 0.3;
+              shadow = 'shadow';
+              x = offset * 60;
             }
+            
             return (
               <motion.div
                 key={item.id || item.filename || idx}
-                className={`relative mx-[-40px] transition-all duration-300 cursor-pointer ${shadow}`}
+                className={`absolute cursor-pointer ${shadow}`}
                 style={{
-                  zIndex: z,
-                  opacity,
-                  scale,
                   pointerEvents: 'auto',
+                  left: '50%',
+                  marginLeft: '-130px', // Half of card width (260px / 2)
                 }}
                 onClick={() => onCardSelect && onCardSelect(idx)}
-                animate={{ scale, opacity, zIndex: z }}
+                animate={{ 
+                  scale, 
+                  opacity, 
+                  zIndex: z,
+                  x: x
+                }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               >
                 <img
@@ -80,15 +114,15 @@ function FramerCarousel({ punchCards = [], activeIndex = 0, onCardSelect }) {
           })}
         </div>
         
-        {/* Right arrow */}
-        <button
-          onClick={goRight}
-          disabled={activeIndex === punchCards.length - 1}
-          className="absolute right-0 z-30 bg-white/80 rounded-full shadow px-2 py-1 text-2xl top-1/2 -translate-y-1/2"
-          style={{ pointerEvents: activeIndex === punchCards.length - 1 ? 'none' : 'auto', opacity: activeIndex === punchCards.length - 1 ? 0.3 : 1 }}
-        >
-          &#8594;
-        </button>
+        {/* Right arrow - only show if 3+ cards */}
+        {punchCards.length >= 3 && (
+          <button
+            onClick={goRight}
+            className="absolute right-0 z-30 bg-white/80 rounded-full shadow px-2 py-1 text-2xl top-1/2 -translate-y-1/2 hover:bg-white transition-colors"
+          >
+            &#8594;
+          </button>
+        )}
       </div>
       
       {/* Card name below */}

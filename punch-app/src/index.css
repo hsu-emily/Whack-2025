@@ -447,7 +447,172 @@ textarea {
   color: var(--color-gray-700);
 }
 
-/* Dashboard Header */
+/* Dashboard Header - New Style */
+.dashboard-header-new {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 0rem;
+  position: relative;
+  padding-top: 0;
+  margin-top: 3rem;
+  padding-right: 2rem;
+  padding-left: 2rem;
+  min-height: 80px;
+  overflow: visible;
+}
+
+@media (min-width: 640px) {
+  .dashboard-header-new {
+    margin-bottom: 0.75rem;
+    margin-top: 3.5rem;
+    padding-right: 3rem;
+    padding-left: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-header-new {
+    margin-bottom: 1rem;
+    margin-top: 4rem;
+    padding-right: 4rem;
+    padding-left: 4rem;
+  }
+}
+
+.dashboard-title-new {
+  font-size: 72px;
+  font-weight: 700;
+  color: #61283B;
+  text-align: center;
+  font-family: 'Instrument Sans', sans-serif;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  line-height: 1.2;
+  white-space: nowrap;
+  width: auto;
+  max-width: none;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@media (min-width: 640px) {
+  .dashboard-title-new {
+    font-size: 72px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-title-new {
+    font-size: 72px;
+  }
+}
+
+.dashboard-header-right-new {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  z-index: 20;
+  padding: 5px 1rem; /* top + right padding */
+}
+
+
+@media (min-width: 640px) {
+  .dashboard-header-right-new {
+    padding-left: 12rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-header-right-new {
+    padding-left: 16rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .dashboard-header-right-new {
+    gap: 1.25rem;
+  }
+}
+
+.btn-bunny {
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-base);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-pink-600);
+}
+
+@media (min-width: 640px) {
+  .btn-bunny {
+    padding: 0.75rem 0.75rem;
+  }
+}
+
+.btn-bunny:hover {
+  background: var(--color-pink-100);
+  transform: scale(1.1);
+}
+
+.btn-reflection-new {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  background: var(--color-pink-100);
+  color: var(--color-pink-600);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-base);
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+@media (min-width: 640px) {
+  .btn-reflection-new {
+    padding: 0.75rem 1.875rem;
+  }
+}
+
+.btn-reflection-new:hover {
+  background: var(--color-pink-200);
+}
+
+.btn-logout-new {
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-base);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-pink-600);
+}
+
+@media (min-width: 640px) {
+  .btn-logout-new {
+    padding: 0.75rem 0.75rem;
+  }
+}
+
+.btn-logout-new:hover {
+  background: var(--color-pink-100);
+}
+
+/* Dashboard Header - Old Style (keeping for backwards compatibility) */
 .dashboard-header {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(4px);
@@ -475,12 +640,15 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
 }
 
 .dashboard-header-left {
   display: flex;
   align-items: center;
   gap: 1.25rem;
+  flex: 1;
+  justify-content: center;
 }
 
 @media (min-width: 640px) {
@@ -492,7 +660,7 @@ textarea {
 .dashboard-title {
   font-size: 1.5rem;
   font-weight: bold;
-  color: var(--color-pink-500);
+  color: var(--color-purple-700);
   text-align: center;
   font-family: 'Press Start 2P', cursive;
 }
@@ -500,6 +668,12 @@ textarea {
 @media (min-width: 640px) {
   .dashboard-title {
     font-size: 1.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-title {
+    font-size: 2rem;
   }
 }
 
@@ -519,6 +693,8 @@ textarea {
   display: flex;
   align-items: center;
   gap: 1rem;
+  position: absolute;
+  right: 0;
 }
 
 @media (min-width: 640px) {
@@ -728,6 +904,10 @@ textarea {
   width: 100%;
   position: relative;
   padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .habits-carousel-wrapper {
@@ -737,32 +917,52 @@ textarea {
   justify-content: center;
   width: 100%;
   min-height: 500px;
+  margin: 0 auto;
+  padding: 0 3.5rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .habits-carousel-wrapper {
+    padding: 0 4rem;
+  }
 }
 
 .habits-carousel {
   position: relative;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   perspective: 1000px;
   overflow: visible;
+  margin: 0 auto;
+  /* Center the carousel in the available space between arrows */
+  flex: 1;
+  max-width: 100%;
 }
 
 .carousel-card {
   position: absolute;
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
   left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
   cursor: pointer;
   will-change: transform, opacity, scale;
+  transform-origin: center center;
+  /* Framer Motion handles the transform animation with x and y */
 }
 
 .carousel-card:hover {
   z-index: 40 !important;
+}
+
+.carousel-card.disabled {
+  cursor: default;
+  pointer-events: none;
 }
 
 .carousel-nav-btn {
@@ -799,22 +999,22 @@ textarea {
 }
 
 .carousel-nav-left {
-  left: 1rem;
+  left: 0.5rem;
 }
 
 @media (min-width: 640px) {
   .carousel-nav-left {
-    left: 2rem;
+    left: 1rem;
   }
 }
 
 .carousel-nav-right {
-  right: 1rem;
+  right: 0.5rem;
 }
 
 @media (min-width: 640px) {
   .carousel-nav-right {
-    right: 2rem;
+    right: 1rem;
   }
 }
 
@@ -823,8 +1023,9 @@ textarea {
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 2rem;
+  margin-top: 1rem;
   padding: 1rem;
+  width: 100%;
 }
 
 .carousel-indicator {
@@ -918,6 +1119,9 @@ textarea {
 
 /* Button Styles */
 .btn-new-habit {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -931,13 +1135,14 @@ textarea {
   cursor: pointer;
   font-family: 'Press Start 2P', cursive;
   font-size: 0.75rem;
-  margin-left: 1.5rem;
+  z-index: 100;
 }
 
 @media (min-width: 640px) {
   .btn-new-habit {
     padding: 1rem 2rem;
-    margin-left: 2rem;
+    bottom: 2.5rem;
+    right: 2.5rem;
   }
 }
 
@@ -1149,7 +1354,7 @@ textarea {
   align-items: center;
   justify-content: center;
   position: relative;
-  padding-top: 5rem;
+  padding-top: 1.5rem;
   padding-left: 2.5rem;
   padding-right: 2.5rem;
   padding-bottom: 2rem;
@@ -1159,7 +1364,7 @@ textarea {
 
 @media (min-width: 640px) {
   .layout {
-    padding-top: 6rem;
+    padding-top: 1.5rem;
     padding-left: 3rem;
     padding-right: 3rem;
     padding-bottom: 3rem;
@@ -1168,7 +1373,7 @@ textarea {
 
 @media (min-width: 1024px) {
   .layout {
-    padding-top: 7rem;
+    padding-top: 1.5rem;
     padding-left: 4rem;
     padding-right: 4rem;
     padding-bottom: 4rem;
@@ -1177,6 +1382,7 @@ textarea {
 
 @media (min-width: 1280px) {
   .layout {
+    padding-top: 1.5rem;
     padding-left: 5rem;
     padding-right: 5rem;
     padding-bottom: 5rem;
@@ -1506,27 +1712,27 @@ textarea {
   max-width: 80rem;
   margin: 0 auto;
   padding: 3rem 2rem;
-  padding-top: 3rem;
+  padding-top: 0;
 }
 
 @media (min-width: 640px) {
   .dashboard-container {
     padding: 4rem 3rem;
-    padding-top: 4rem;
+    padding-top: 0;
   }
 }
 
 @media (min-width: 1024px) {
   .dashboard-container {
     padding: 5rem 4rem;
-    padding-top: 5rem;
+    padding-top: 0;
   }
 }
 
 @media (min-width: 1280px) {
   .dashboard-container {
     padding: 5rem 5rem;
-    padding-top: 5rem;
+    padding-top: 0;
   }
 }
 
