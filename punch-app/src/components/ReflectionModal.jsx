@@ -2,17 +2,16 @@ import { useState } from 'react';
 import { X, Sparkles, Loader2, Heart } from 'lucide-react';
 import { useHabitStore } from '../store/habitStore';
 import { analyzeReflection } from '../services/geminiService';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { useAuth } from '../context/AuthContext';
 
-export default function ReflectionModal({ onClose }) {
-  const { user } = useAuth();
+export default function ReflectionModal({ onClose, user }) {
   const habits = useHabitStore(state => state.habits);
   const [reflection, setReflection] = useState('');
   const [loading, setLoading] = useState(false);
   const [coachFeedback, setCoachFeedback] = useState(null);
   const [step, setStep] = useState('input'); // 'input' or 'feedback'
+  const [journalId, setJournalId] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,8 +19,10 @@ export default function ReflectionModal({ onClose }) {
 
     setLoading(true);
     try {
+      // First, save the reflection as a journal entry
+      let docRef = null;
       if (user) {
-        await addDoc(collection(db, 'reflections'), {
+        docRef = await addDoc(collection(db, 'reflections'), {
           userId: user.uid,
           text: reflection,
           habits: habits.map(h => ({
@@ -32,12 +33,21 @@ export default function ReflectionModal({ onClose }) {
           })),
           createdAt: new Date().toISOString()
         });
+        setJournalId(docRef.id);
       }
 
+      // Then get AI feedback
       const feedback = await analyzeReflection(reflection, habits, {});
       if (feedback) {
         setCoachFeedback(feedback);
         setStep('feedback');
+        
+        // Update the journal entry with AI feedback if we have a docRef
+        if (docRef && user) {
+          await updateDoc(doc(db, 'reflections', docRef.id), {
+            aiFeedback: feedback
+          });
+        }
       } else {
         alert('Reflection saved! AI analysis unavailable at the moment.');
         onClose();
@@ -53,7 +63,7 @@ export default function ReflectionModal({ onClose }) {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        {/* HEADER – removed star here */}
+        {/* HEADER */}
         <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 flex items-center justify-center rounded-t-2xl relative z-10">
           <h2 className="text-2xl font-bold text-white text-center">
             Weekly Reflection
@@ -100,7 +110,7 @@ export default function ReflectionModal({ onClose }) {
               </div>
             </div>
 
-            {/* Buttons – width now matches textarea (max-w-2xl) */}
+            {/* Buttons */}
             <div className="max-w-2xl w-full mx-auto flex gap-3 pt-2">
               <button
                 type="button"
@@ -132,6 +142,7 @@ export default function ReflectionModal({ onClose }) {
         ) : (
           <div className="p-6 md:p-8 space-y-6 flex flex-col items-center">
             <div className="max-w-2xl w-full mx-auto space-y-6">
+              {/* AI Coach Message */}
               {coachFeedback?.message && (
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-6">
                   <div className="flex flex-col items-center text-center gap-3">
@@ -148,37 +159,39 @@ export default function ReflectionModal({ onClose }) {
                 </div>
               )}
 
-              {coachFeedback?.suggestions &&
-                coachFeedback.suggestions.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="font-bold text-gray-800 mb-1 flex items-center justify-center gap-2 text-center">
-                      <Sparkles className="text-purple-600" size={20} />
-                      <span>Personalized Suggestions</span>
-                    </h3>
-                    <div className="space-y-2">
-                      {coachFeedback.suggestions.map((suggestion, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-purple-300 transition-colors"
-                        >
-                          <div className="flex items-start gap-3 justify-center">
-                            <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="text-purple-600 font-bold text-sm">
-                                {idx + 1}
-                              </span>
-                            </div>
+              {/* Suggestions */}
+              {coachFeedback?.suggestions && coachFeedback.suggestions.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-bold text-gray-800 mb-1 flex items-center justify-center gap-2 text-center">
+                    <Sparkles className="text-purple-600" size={20} />
+                    <span>Personalized Suggestions</span>
+                  </h3>
+                  <div className="space-y-2">
+                    {coachFeedback.suggestions.map((suggestion, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-purple-300 transition-colors"
+                      >
+                        <div className="flex items-start gap-3 justify-center">
+                          <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-purple-600 font-bold text-sm">
+                              {idx + 1}
+                            </span>
+                          </div>
+                          <div>
                             <p className="text-gray-800 text-left">
                               {suggestion}
                             </p>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
             </div>
 
-            {/* Bottom buttons – also match content width */}
+            {/* Bottom buttons */}
             <div className="max-w-2xl w-full mx-auto flex gap-3 pt-4 border-t border-gray-200">
               <button
                 onClick={() => {

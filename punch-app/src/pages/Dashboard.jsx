@@ -1,7 +1,7 @@
 // src/pages/Dashboard.jsx
 import { signOut } from 'firebase/auth';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, LogOut, Plus, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, Plus, Sparkles, BookOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CardZoomModal from '../components/CardZoomModal';
@@ -9,6 +9,7 @@ import CreateHabitModal from '../components/CreateHabitModal';
 import HabitCard from '../components/HabitCard';
 import Layout from '../components/Layout';
 import ReflectionModal from '../components/ReflectionModal';
+import JournalModal from '../components/JournalModal';
 import { auth } from '../firebase';
 import { useHabitStore } from '../store/habitStore';
 
@@ -29,6 +30,7 @@ export default function Dashboard({ user, onLogout }) {
   const fetchHabits = useHabitStore(state => state.fetchHabits);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showReflection, setShowReflection] = useState(false);
+  const [showJournals, setShowJournals] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [zoomedHabit, setZoomedHabit] = useState(null);
 
@@ -62,7 +64,7 @@ export default function Dashboard({ user, onLogout }) {
     if (isComplete) {
       const habit = habits.find(h => h.id === habitId);
       setTimeout(() => {
-        alert(` Reward Unlocked!\n\n${habit.reward}`);
+        alert(`🎉 Reward Unlocked!\n\n${habit.reward}`);
       }, 300);
     }
   };
@@ -90,47 +92,45 @@ export default function Dashboard({ user, onLogout }) {
       <div className="dashboard-container">
         {/* Header */}
         <div className="dashboard-header-right-new">
-        <button
-          onClick={() => setShowReflection(true)}
-          className="btn-reflection-new"
-        >
-          <Sparkles size={18} />
-          <span className="btn-reflection-text">Reflection</span>
-        </button>
-        {bunnyIcon && (
           <button
-            onClick={() => {
-              // Add bunny click handler here if needed
-              console.log('Bunny clicked!');
-            }}
-            className="btn-bunny"
-            title="Bunny"
-            aria-label="Bunny"
+            onClick={() => setShowReflection(true)}
+            className="btn-reflection-new"
           >
-            <img 
-              src={bunnyIcon} 
-              alt="Bunny" 
-              style={{ width: '24px', height: '24px', objectFit: 'contain' }}
-            />
+            <Sparkles size={18} />
+            <span className="btn-reflection-text">Reflection</span>
           </button>
-        )}
-        <button
-          onClick={handleLogout}
-          className="btn-logout-new"
-          title="Logout"
-        >
-          <LogOut size={20} />
-        </button>
-      </div>
-      
-      
+          {bunnyIcon && (
+            <button
+              onClick={() => {
+                console.log('Bunny clicked!');
+              }}
+              className="btn-bunny"
+              title="Bunny"
+              aria-label="Bunny"
+            >
+              <img 
+                src={bunnyIcon} 
+                alt="Bunny" 
+                style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+              />
+            </button>
+          )}
+          <button
+            onClick={handleLogout}
+            className="btn-logout-new"
+            title="Logout"
+          >
+            <LogOut size={20} />
+          </button>
+        </div>
+        
         <header className="dashboard-header-new">
           <h1 className="dashboard-title-new">
             {user?.displayName?.split(' ')[0] || 'Friend'}'s Habits.
           </h1>
         </header>
 
-        {!(showCreateModal || showReflection || zoomedHabit) && (
+        {!(showCreateModal || showReflection || showJournals || zoomedHabit) && (
           <button
             onClick={() => setShowCreateModal(true)}
             className="btn-new-habit"
@@ -141,149 +141,145 @@ export default function Dashboard({ user, onLogout }) {
         )}
 
         {uncompletedHabits.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-state-emoji">🐰</div>
-              <h3 className="empty-state-title">No habits right now</h3>
-              <p className="empty-state-text">Create your first punch card to start your journey ✨</p>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="btn-create-first"
-              >
-                Create Your First Habit
-              </button>
-            </div>
-          ) : (
-            <div className="habits-carousel-container">
-              <div className="habits-carousel-wrapper">
-                {/* Left Navigation - only show if 3+ cards */}
-                {uncompletedHabits.length >= 3 && (
-                  <button
-                    onClick={() => {
-                      const newIndex = (activeIndex - 1 + uncompletedHabits.length) % uncompletedHabits.length;
-                      setActiveIndex(newIndex);
-                    }}
-                    className="carousel-nav-btn carousel-nav-left"
-                    aria-label="Previous habit"
-                  >
-                    <ChevronLeft size={24} />
-                  </button>
-                )}
+          <div className="empty-state">
+            <div className="empty-state-emoji">🐰</div>
+            <h3 className="empty-state-title">No habits right now</h3>
+            <p className="empty-state-text">Create your first punch card to start your journey ✨</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="btn-create-first"
+            >
+              Create Your First Habit
+            </button>
+          </div>
+        ) : (
+          <div className="habits-carousel-container">
+            <div className="habits-carousel-wrapper">
+              {/* Left Navigation - only show if 3+ cards */}
+              {uncompletedHabits.length >= 3 && (
+                <button
+                  onClick={() => {
+                    const newIndex = (activeIndex - 1 + uncompletedHabits.length) % uncompletedHabits.length;
+                    setActiveIndex(newIndex);
+                  }}
+                  className="carousel-nav-btn carousel-nav-left"
+                  aria-label="Previous habit"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+              )}
 
-                {/* Carousel Cards */}
-                <div className="habits-carousel">
-                  {uncompletedHabits.map((habit, index) => {
-                    // Calculate offset from active index, handling wrap-around for infinite scroll
-                    let offset = index - activeIndex;
-                    
-                    // Normalize offset for infinite scroll (shortest path)
-                    if (Math.abs(offset) > uncompletedHabits.length / 2) {
-                      offset = offset > 0 
-                        ? offset - uncompletedHabits.length 
-                        : offset + uncompletedHabits.length;
-                    }
-                    
-                    // Determine styling based on offset
-                    let scale = 0.85;
-                    let opacity = 0.3;
-                    let zIndex = 10;
-                    
-                    if (offset === 0) {
-                      // Center card
-                      scale = 1.05;
-                      opacity = 1;
-                      zIndex = 20;
-                    } else if (Math.abs(offset) === 1) {
-                      // Adjacent cards (left and right)
-                      scale = 0.85;
-                      opacity = 0.7;
-                      zIndex = 15;
-                    } else if (Math.abs(offset) === 2) {
-                      // Further cards
-                      scale = 0.75;
-                      opacity = 0.5;
-                      zIndex = 12;
-                    } else {
-                      // Cards further away
-                      scale = 0.65;
-                      opacity = 0.3;
-                      zIndex = 5;
-                    }
-                    
-                    // Calculate x position in pixels for proper centering
-                    // We need to combine -50% (to center from left: 50%) with the pixel offset
-                    // Center card at 0, left card at -120px, right card at +120px
-                    const xPosition = offset * 140; // pixels offset from center (increased for bigger cards)
-                    // Use Framer Motion's x and y for smooth animation
-                    // x combines -50% centering with pixel offset, y is -45% to position higher above dots
-                    const isCenterCard = offset === 0;
+              {/* Carousel Cards */}
+              <div className="habits-carousel">
+                {uncompletedHabits.map((habit, index) => {
+                  // Calculate offset from active index, handling wrap-around for infinite scroll
+                  let offset = index - activeIndex;
+                  
+                  // Normalize offset for infinite scroll (shortest path)
+                  if (Math.abs(offset) > uncompletedHabits.length / 2) {
+                    offset = offset > 0 
+                      ? offset - uncompletedHabits.length 
+                      : offset + uncompletedHabits.length;
+                  }
+                  
+                  // Determine styling based on offset
+                  let scale = 0.85;
+                  let opacity = 0.3;
+                  let zIndex = 10;
+                  
+                  if (offset === 0) {
+                    // Center card
+                    scale = 1.05;
+                    opacity = 1;
+                    zIndex = 20;
+                  } else if (Math.abs(offset) === 1) {
+                    // Adjacent cards (left and right)
+                    scale = 0.85;
+                    opacity = 0.7;
+                    zIndex = 15;
+                  } else if (Math.abs(offset) === 2) {
+                    // Further cards
+                    scale = 0.75;
+                    opacity = 0.5;
+                    zIndex = 12;
+                  } else {
+                    // Cards further away
+                    scale = 0.65;
+                    opacity = 0.3;
+                    zIndex = 5;
+                  }
+                  
+                  // Calculate x position in pixels for proper centering
+                  const xPosition = offset * 140;
+                  const isCenterCard = offset === 0;
 
-                    return (
-                      <motion.div
-                        key={habit.id}
-                        className={`carousel-card ${!isCenterCard ? 'disabled' : ''}`}
-                        style={{
-                          zIndex,
-                        }}
-                        initial={{
-                          x: `calc(-50% + ${xPosition}px)`,
-                          y: '-45%',
-                          scale,
-                          opacity,
-                        }}
-                        animate={{
-                          x: `calc(-50% + ${xPosition}px)`,
-                          y: '-45%',
-                          scale,
-                          opacity,
-                        }}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 300,
-                          damping: 30,
-                        }}
-                        onClick={isCenterCard ? () => setZoomedHabit(habit) : undefined}
-                      >
-                        <HabitCard
-                          habit={habit}
-                          onPunch={() => handlePunch(habit.id)}
-                          hideControls={true}
-                          size="medium"
-                        />
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {/* Right Navigation - only show if 3+ cards */}
-                {uncompletedHabits.length >= 3 && (
-                  <button
-                    onClick={() => {
-                      const newIndex = (activeIndex + 1) % uncompletedHabits.length;
-                      setActiveIndex(newIndex);
-                    }}
-                    className="carousel-nav-btn carousel-nav-right"
-                    aria-label="Next habit"
-                  >
-                    <ChevronRight size={24} />
-                  </button>
-                )}
+                  return (
+                    <motion.div
+                      key={habit.id}
+                      className={`carousel-card ${!isCenterCard ? 'disabled' : ''}`}
+                      style={{
+                        zIndex,
+                      }}
+                      initial={{
+                        x: `calc(-50% + ${xPosition}px)`,
+                        y: '-45%',
+                        scale,
+                        opacity,
+                      }}
+                      animate={{
+                        x: `calc(-50% + ${xPosition}px)`,
+                        y: '-45%',
+                        scale,
+                        opacity,
+                      }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 30,
+                      }}
+                      onClick={isCenterCard ? () => setZoomedHabit(habit) : undefined}
+                    >
+                      <HabitCard
+                        habit={habit}
+                        onPunch={() => handlePunch(habit.id)}
+                        hideControls={true}
+                        size="medium"
+                      />
+                    </motion.div>
+                  );
+                })}
               </div>
 
-              {/* Carousel Indicators */}
-              {uncompletedHabits.length > 1 && (
-                <div className="carousel-indicators">
-                  {uncompletedHabits.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveIndex(index)}
-                      className={`carousel-indicator ${index === activeIndex ? 'active' : ''}`}
-                      aria-label={`Go to habit ${index + 1}`}
-                    />
-                  ))}
-                </div>
+              {/* Right Navigation - only show if 3+ cards */}
+              {uncompletedHabits.length >= 3 && (
+                <button
+                  onClick={() => {
+                    const newIndex = (activeIndex + 1) % uncompletedHabits.length;
+                    setActiveIndex(newIndex);
+                  }}
+                  className="carousel-nav-btn carousel-nav-right"
+                  aria-label="Next habit"
+                >
+                  <ChevronRight size={24} />
+                </button>
               )}
             </div>
-          )}
+
+            {/* Carousel Indicators */}
+            {uncompletedHabits.length > 1 && (
+              <div className="carousel-indicators">
+                {uncompletedHabits.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveIndex(index)}
+                    className={`carousel-indicator ${index === activeIndex ? 'active' : ''}`}
+                    aria-label={`Go to habit ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Stats Overview */}
         <div className="stats-container">
@@ -305,6 +301,17 @@ export default function Dashboard({ user, onLogout }) {
                 <div className="stat-label">Rewards unlocked</div>
               </div>
             </div>
+            
+            {/* View Journals Button */}
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={() => setShowJournals(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <BookOpen size={20} />
+                <span>View My Journals</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -318,7 +325,11 @@ export default function Dashboard({ user, onLogout }) {
       )}
 
       {showReflection && (
-        <ReflectionModal onClose={() => setShowReflection(false)} />
+        <ReflectionModal onClose={() => setShowReflection(false)} user={user} />
+      )}
+
+      {showJournals && (
+        <JournalModal onClose={() => setShowJournals(false)} user={user} />
       )}
 
       {zoomedHabit && (
@@ -327,12 +338,9 @@ export default function Dashboard({ user, onLogout }) {
           onClose={() => setZoomedHabit(null)}
           onPunch={async () => {
             await handlePunch(zoomedHabit.id);
-            // Don't close immediately - let the modal handle the delay
-            // The modal will stay open for 2 seconds after punching
           }}
           onUndo={async () => {
             await undoPunch(zoomedHabit.id);
-            // The useEffect will automatically sync the updated habit
           }}
         />
       )}
