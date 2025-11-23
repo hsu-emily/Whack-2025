@@ -96,11 +96,11 @@ function parseJSON(text) {
 }
 
 // ==========================================
-// IMPROVED PROMPTS
+// IMPROVED PROMPTS - UPDATED: No targetPunches in AI responses
 // ==========================================
 
 export async function generateHabitSuggestions(onboardingData) {
-  // IMPROVED: More context, examples, and guidance
+  // UPDATED: Removed targetPunches from AI generation
   const systemInstruction = `You are an expert college student success coach who specializes in building sustainable habits. You understand student life - classes, exams, social life, stress, and time constraints.`;
   
   const prompt = `A college student needs help building better habits. Here's their situation:
@@ -127,6 +127,8 @@ Create 3-5 specific, actionable habits that will actually help THIS student. Mak
 4. **Impactful** - Will genuinely help with their struggles
 5. **Varied** - Mix of academic, wellness, and life skills
 
+**Important:** All habits will be tracked on punch cards with exactly 10 punches. Don't mention specific numbers of days or punches in your suggestions.
+
 **Good Examples:**
 - "Do a 5-minute brain dump before bed to clear your mind"
 - "Set phone to Do Not Disturb during first morning hour"
@@ -144,32 +146,33 @@ Return ONLY this JSON array (no other text):
     "title": "Specific, actionable habit name (under 50 characters)",
     "description": "One sentence explaining why this helps THIS student (under 100 characters)",
     "frequency": "daily",
-    "targetPunches": 10,
     "reward": "Specific, motivating reward they'd actually want"
   }
 ]
 
 Rules:
 - frequency: exactly "daily" or "weekly"
-- targetPunches: between 5-20 (daily habits: 7-14, weekly habits: 4-8)
-- rewards: specific and personal, not generic`;
+- rewards: specific and personal, not generic
+- Do NOT include targetPunches field - it will be added automatically`;
 
   try {
     const response = await callGemini(prompt, { systemInstruction, temperature: 0.9 });
-    return parseJSON(response);
+    const habits = parseJSON(response);
+    // Add targetPunches: 10 to all habits automatically
+    return habits.map(h => ({ ...h, targetPunches: 10 }));
   } catch (error) {
     return [{
       title: "Morning Planning Ritual",
       description: "Start each day with clarity and intention",
       frequency: "daily",
-      targetPunches: 7,
+      targetPunches: 10,
       reward: "Your favorite coffee or tea ☕"
     }];
   }
 }
 
 export async function transformGoalToHabits(goalText) {
-  // IMPROVED: Much more detailed with examples
+  // UPDATED: Removed targetPunches from AI generation
   const systemInstruction = `You are a habit formation expert who helps college students break down big goals into daily actions. You understand that students need specific, achievable steps - not vague advice.`;
   
   const prompt = `A college student has this goal:
@@ -183,6 +186,8 @@ Help them achieve it by creating 2-3 specific habits they can track daily or wee
 2. **Make it MEASURABLE** - They need to know if they did it or not
 3. **Keep it SIMPLE** - Students are busy, habits should be easy to start
 4. **Show the CONNECTION** - Explain how this habit leads to their goal
+
+**Important:** All punch cards have exactly 10 punches, so don't mention specific numbers of days or punches.
 
 **Examples of GOOD transformations:**
 
@@ -216,22 +221,22 @@ Return ONLY this JSON array:
   {
     "title": "Specific action they can do (under 60 characters)",
     "description": "One sentence: how this helps achieve '${goalText}' (under 120 characters)",
-    "frequency": "daily",
-    "targetPunches": 10
+    "frequency": "daily"
   }
 ]
 
 Rules:
 - frequency: exactly "daily" or "weekly" 
-- targetPunches: 5-20 (daily: 7-14, weekly: 4-8)
 - title: Must be a specific, measurable action
-- description: Must connect back to their original goal`;
+- description: Must connect back to their original goal
+- Do NOT include targetPunches field - it will be added automatically`;
 
   try {
     const response = await callGemini(prompt, { systemInstruction, temperature: 0.85 });
     const habits = parseJSON(response);
     console.log('✅ Generated habits:', habits);
-    return habits;
+    // Add targetPunches: 10 to all habits automatically
+    return habits.map(h => ({ ...h, targetPunches: 10 }));
   } catch (error) {
     console.error('Error:', error);
     throw error;
@@ -239,7 +244,7 @@ Rules:
 }
 
 export async function generateThemeFromDescription(description) {
-  // IMPROVED: More creative and specific
+  // UNCHANGED - no targetPunches here
   const systemInstruction = `You are a UI/UX designer who creates beautiful, harmonious color palettes. You understand color theory, psychology, and what makes interfaces feel good.`;
   
   const prompt = `Create a beautiful color theme based on this vibe:
@@ -286,7 +291,7 @@ Use real hex colors that complement each other beautifully.`;
 }
 
 export async function analyzeReflection(reflectionText, habits, completionData) {
-  // IMPROVED: More empathetic and actionable
+  // UNCHANGED - no targetPunches generation here
   const habitsSummary = habits.map(h => 
     `• ${h.title}: ${h.currentPunches}/${h.targetPunches} punches (${Math.round((h.currentPunches / h.targetPunches) * 100)}%)`
   ).join('\n');
@@ -340,7 +345,7 @@ Return ONLY this JSON:
 }
 
 export async function generateRewardIdeas(habitTitle, userPreferences = '') {
-  // IMPROVED: More personalized and creative
+  // UNCHANGED - no targetPunches here
   const systemInstruction = `You are a motivational expert who understands what actually motivates college students. You suggest rewards that are specific, achievable, and genuinely exciting.`;
   
   const prompt = `Suggest rewards for completing this habit:
@@ -408,3 +413,15 @@ export function getAPIStatus() {
     availableModels: MODELS
   };
 }
+
+// Export the model for use in statsService.js
+export const model = {
+  generateContent: async (prompt) => {
+    const response = await callGemini(prompt);
+    return {
+      response: {
+        text: () => response
+      }
+    };
+  }
+};
