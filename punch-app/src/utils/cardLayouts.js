@@ -4,11 +4,11 @@
 // Base layout configuration
 const baseLayout = {
   title: {
-    top: '3%',
+    top: '5%',
     left: '7%',
     textAlign: 'left',
     color: '#333',
-    fontSize: '2rem',
+    fontSize: '1.3rem',
     fontFamily: 'Press Start 2P',
     fontWeight: 'bold',
     width: '80%'
@@ -18,7 +18,7 @@ const baseLayout = {
     left: '7%',
     textAlign: 'left',
     color: '#555',
-    fontSize: '1.3rem',
+    fontSize: '.9rem',
     fontFamily: 'Press Start 2P',
     width: '80%'
   },
@@ -55,11 +55,11 @@ export const cardLayouts = {
   'LacePink.png': {
     ...baseLayout,
     title: {
-      top: '12%',
+      top: '14%',
       left: '0%',
       textAlign: 'center',
       color: '#f677a2',
-      fontSize: '3rem',
+      fontSize: '3.2rem',
       fontFamily: 'Moontime, Great Vibes, cursive',
       fontWeight: 'normal',
       width: '100%'
@@ -87,8 +87,36 @@ export const cardLayouts = {
   },
   'LaceRed.png': {
     ...baseLayout,
-    title: { ...baseLayout.title, color: '#DC2626' },
-    description: { ...baseLayout.description, color: '#EF4444' }
+    title: {
+      top: '14%',
+      left: '0%',
+      textAlign: 'center',
+      color: '#ffffff',
+      fontSize: '1.8rem',
+      fontFamily: 'Moontime, Great Vibes, cursive',
+      fontWeight: 'bold',
+      width: '100%'
+    },
+    description: {
+      top: '23%',
+      left: '8%',
+      textAlign: 'center',
+      color: '#ffffff',
+      fontSize: '1rem',
+      fontFamily: 'Dancing Script',
+      width: '80%'
+    },
+    punchGrid: {
+      top: '37%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      punchCircleSize: '78px',
+      punchIconSize: '78px',
+      punchHorizontalGap: '0px',
+      punchVerticalGap: '5px',
+      numRows: 2,
+      punchesPerRow: 5
+    }
   },
   'PlaidBlue.png': {
     ...baseLayout,
@@ -173,7 +201,7 @@ export const cardLayouts = {
       left: '9%',
       textAlign: 'center',
       color: '#ffffff',
-      fontSize: '.8rem',
+      fontSize: '.7rem',
       fontFamily: 'Press Start 2P',
       width: '60%'
     },
@@ -206,7 +234,7 @@ export const cardLayouts = {
       left: '15%',
       textAlign: 'center',
       color: '#ffffff',
-      fontSize: '0.9rem',
+      fontSize: '0.8rem',
       fontFamily: 'Press Start 2P',
       width: '70%'
     },
