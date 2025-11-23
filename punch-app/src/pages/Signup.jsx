@@ -14,7 +14,7 @@ export default function Signup() {
     e.preventDefault();
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate('/dashboard'); // Redirect to a dashboard or home page after signup
+      navigate('/dashboard');
     } catch (error) {
       alert(error.message);
     }
@@ -22,10 +22,10 @@ export default function Signup() {
 
   return (
     <Layout>
-      <NavBar></NavBar>
-      <form onSubmit={handleSignup} className="form-container">
-        <div className="form-group">
-          <h2 className="page-heading">Sign Up</h2>
+      <NavBar />
+      <div className="form-container">
+        <h2 className="page-heading no-wrap">Sign Up</h2>
+        <form onSubmit={handleSignup} className="form-group">
           <input
             type="email"
             className="form-input"
@@ -44,11 +44,12 @@ export default function Signup() {
           />
           <button type="submit" className="btn-form-primary">Sign Up</button>
           <div className="form-link">
-            Already have an account?{' '}
+            Already have an account?
+            <br />
             <Link to="/login">Log in here.</Link>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </Layout>
   );
 }
