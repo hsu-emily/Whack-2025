@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import holePunchCursor from '../assets/cursors/holePunch.png';
+import holePunchClickCursor from '../assets/cursors/holePunchClick.png';
 
 export default function PunchCardPreview({
   name,
@@ -14,6 +16,27 @@ export default function PunchCardPreview({
   targetPunches = 10,
   size = 'medium', // 'medium' or 'large' - kept for compatibility but not used
 }) {
+  const [isClicking, setIsClicking] = useState(false);
+
+  // Track mouse down/up for cursor change
+  useEffect(() => {
+    const handleMouseDown = () => {
+      setIsClicking(true);
+    };
+
+    const handleMouseUp = () => {
+      setIsClicking(false);
+    };
+
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
   // Use values directly from placement objects (no Medium/Large distinction)
 
   const getPunchIcon = (index) => {
@@ -87,6 +110,7 @@ export default function PunchCardPreview({
         backgroundRepeat: 'no-repeat',
         border: 'none',
         boxShadow: '0 4px 24px rgba(248, 187, 208, 0.5)',
+        cursor: `url(${isClicking ? holePunchClickCursor : holePunchCursor}) 32 32, auto`,
       }}
     >
       {/* Title - Absolute Positioned: Fully controlled by titlePlacement */}

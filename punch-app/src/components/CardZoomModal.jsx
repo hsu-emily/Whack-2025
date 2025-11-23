@@ -28,6 +28,8 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
   const navigate = useNavigate();
   const { deleteHabit } = useHabitStore();
   const cardRef = useRef(null);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [justPunched, setJustPunched] = useState(false);
@@ -50,12 +52,50 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
 
 
   useEffect(() => {
+    // Hide default cursor on body
+    document.body.style.cursor = 'none';
+    
+    let animationFrameId;
+    
+    const handleMouseMove = (e) => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      animationFrameId = requestAnimationFrame(() => {
+        setCursorPosition({ x: e.clientX, y: e.clientY });
+        
+        if (!cardRef.current) {
+          setIsHovering(false);
+          return;
+        }
+        
+        const rect = cardRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Check if mouse is over the card
+        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+          setIsHovering(true);
+        } else {
+          setIsHovering(false);
+        }
+      });
+    };
+
     const handleMouseDown = () => {
       setIsClicking(true);
     };
 
     const handleMouseUp = () => {
       setIsClicking(false);
+    };
+
+    const handleMouseEnter = () => {
+      setIsHovering(true);
+    };
+
+    const handleMouseLeave = () => {
+      setIsHovering(false);
     };
 
     // Close settings dropdown when clicking outside
@@ -65,14 +105,30 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
       }
     };
 
+    window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('click', handleClickOutside);
+    
+    const cardElement = cardRef.current;
+    if (cardElement) {
+      cardElement.addEventListener('mouseenter', handleMouseEnter);
+      cardElement.addEventListener('mouseleave', handleMouseLeave);
+    }
 
     return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      document.body.style.cursor = '';
+      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('click', handleClickOutside);
+      if (cardElement) {
+        cardElement.removeEventListener('mouseenter', handleMouseEnter);
+        cardElement.removeEventListener('mouseleave', handleMouseLeave);
+      }
     };
   }, [showSettings]);
 
@@ -126,6 +182,7 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
             onClose();
           }
         }}
+        style={{ cursor: 'none' }}
       >
         <motion.div
           className="card-zoom-content"
@@ -134,6 +191,7 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
           exit={{ scale: 0.8, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           onClick={(e) => e.stopPropagation()}
+          style={{ cursor: 'none' }}
         >
           {/* Navigation Buttons - Top Left */}
           <div className="card-zoom-nav-buttons">
@@ -205,9 +263,7 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
             ref={cardRef}
             className="card-zoom-card"
             onClick={handleCardClick}
-            style={{ 
-              cursor: `url(${isClicking ? holePunchClickCursor : holePunchCursor}) 32 32, auto`
-            }}
+            style={{ cursor: 'none' }}
             role="button"
             aria-label="Click to punch hole"
             tabIndex={0}
@@ -242,6 +298,35 @@ export default function CardZoomModal({ habit, onClose, onPunch, onUndo }) {
               </div>
             )}
           </div>
+
+          {/* Custom Hole Punch Cursor - Only show when hovering over card */}
+          {isHovering && (
+            <div
+              className="card-zoom-cursor"
+              style={{
+                position: 'fixed',
+                left: `${cursorPosition.x - 10}px`,
+                top: `${cursorPosition.y - 10}px`,
+                width: '200px',
+                height: '200px',
+                pointerEvents: 'none',
+                zIndex: 10000,
+              }}
+            >
+              <img
+                src={isClicking ? holePunchClickCursor : holePunchCursor}
+                alt="hole punch cursor"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  userSelect: 'none',
+                  draggable: false,
+                  display: 'block',
+                }}
+              />
+            </div>
+          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>
