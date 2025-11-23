@@ -3,15 +3,17 @@
 /* ============================================
    FONTS
    ============================================ */
+/* Moontime font - commented out as font files are not available
 @font-face {
   font-family: 'Moontime';
-  src: url('./assets/fonts/Moontime.woff2') format('woff2'),
-       url('./assets/fonts/Moontime.woff') format('woff'),
-       url('./assets/fonts/Moontime.ttf') format('truetype');
+  src: url('../assets/fonts/Moontime.woff2') format('woff2'),
+       url('../assets/fonts/Moontime.woff') format('woff'),
+       url('../assets/fonts/Moontime.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
+*/
 
 /* ============================================
    CSS VARIABLES - Global Color & Theme System
@@ -2235,6 +2237,25 @@ textarea {
   /* Match CardLayoutEditor preview size */
   max-height: 350px;
   max-width: calc(350px * 1004 / 591);
+}
+
+/* Ensure fonts from cardLayouts are applied in PunchCardPreview */
+/* Inline styles have highest specificity - we just need to reset global h2/p rules */
+.punch-card-preview-container .punch-card-title-text,
+.punch-card-preview-container h2.punch-card-title-text {
+  /* Reset global font-family - inline style from cardLayouts will apply */
+  font-family: unset;
+  color: revert;
+  font-weight: revert;
+  line-height: revert;
+}
+
+.punch-card-preview-container .punch-card-description-text,
+.punch-card-preview-container p.punch-card-description-text {
+  /* Reset global font-family - inline style from cardLayouts will apply */
+  font-family: unset;
+  color: revert;
+  line-height: revert;
 }
 
 .card-zoom-card:hover {

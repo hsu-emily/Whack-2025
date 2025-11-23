@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import holePunchCursor from '../assets/cursors/holePunch.png';
 import holePunchClickCursor from '../assets/cursors/holePunchClick.png';
 
@@ -78,31 +78,35 @@ export default function PunchCardPreview({
         })
     );
 
-  // Create title and description styles using direct values
-  const titleStyle = {
+  // Create title and description styles using direct values from cardLayouts
+  // Use useMemo to recalculate styles when titlePlacement or descriptionPlacement changes
+  // This ensures fonts update properly when switching cards
+  const titleStyle = useMemo(() => ({
     top: titlePlacement.top,
     left: titlePlacement.left,
     textAlign: titlePlacement.textAlign,
     color: titlePlacement.color,
     fontSize: titlePlacement.fontSize,
+    // Use fontFamily directly from cardLayouts - explicitly set to ensure it updates
     fontFamily: titlePlacement.fontFamily || 'Arial',
     fontWeight: titlePlacement.fontWeight,
     width: titlePlacement.width,
-  };
+  }), [titlePlacement]);
 
-  const descStyle = {
+  const descStyle = useMemo(() => ({
     top: descriptionPlacement.top,
     left: descriptionPlacement.left,
     textAlign: descriptionPlacement.textAlign,
     color: descriptionPlacement.color,
     fontSize: descriptionPlacement.fontSize,
+    // Use fontFamily directly from cardLayouts - explicitly set to ensure it updates
     fontFamily: descriptionPlacement.fontFamily || 'Arial',
     width: descriptionPlacement.width,
-  };
+  }), [descriptionPlacement]);
 
   return (
     <div
-      className="relative w-full h-full rounded-2xl overflow-hidden"
+      className="relative w-full h-full rounded-2xl overflow-hidden punch-card-preview-container"
       style={{
         backgroundImage: `url(${cardImage})`,
         backgroundSize: 'cover',
@@ -115,7 +119,7 @@ export default function PunchCardPreview({
     >
       {/* Title - Absolute Positioned: Fully controlled by titlePlacement */}
       <h2
-        className="absolute"
+        className="absolute punch-card-title-text"
         style={{
           ...titleStyle,
           zIndex: 10,
@@ -126,7 +130,7 @@ export default function PunchCardPreview({
 
       {/* Description - Absolute Positioned: Fully controlled by descriptionPlacement */}
       <p
-        className="absolute"
+        className="absolute punch-card-description-text"
         style={{
           ...descStyle,
           zIndex: 10,

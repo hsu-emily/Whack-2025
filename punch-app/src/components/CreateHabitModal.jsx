@@ -436,11 +436,12 @@ export default function CreateHabitModal({ userId, onClose }) {
                       className="relative rounded-2xl shadow-2xl overflow-hidden"
                       style={{
                         width: '100%',
-                        maxWidth: '450px',
+                        maxWidth: '600px',
                         aspectRatio: '1004/591'
                       }}
                     >
                       <PunchCardPreview
+                        key={`preview-${selectedCard?.filename}-${selectedCardLayout.title.fontFamily}`}
                         name={habit.title || 'Punch Pass Title'}
                         description={habit.description || 'Your description will appear here.'}
                         icon1={iconMap[selectedIcon1] || selectedIcon1}
@@ -450,6 +451,8 @@ export default function CreateHabitModal({ userId, onClose }) {
                         titlePlacement={selectedCardLayout.title}
                         descriptionPlacement={selectedCardLayout.description}
                         punchGridPlacement={selectedCardLayout.punchGrid}
+                        currentPunches={0}
+                        targetPunches={10}
                       />
                     </div>
                   </div>
